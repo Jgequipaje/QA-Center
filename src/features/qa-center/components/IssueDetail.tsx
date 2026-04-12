@@ -172,7 +172,7 @@ export default function IssueDetail({ issue, onClose }: Props) {
           ) : (
             <span style={{ fontSize: 13, fontWeight: 700, color: t.text, flex: 1, marginRight: 8 }}>{issue.title}</span>
           )}
-          <button onClick={onClose} disabled={running || saving} style={{ background: "none", border: "none", cursor: (running || saving) ? "not-allowed" : "pointer", color: (running || saving) ? t.textFaint : t.textMuted, fontSize: 16, padding: 0 }} title={(running || saving) ? "Operation in progress..." : undefined}>✕</button>
+          <button onClick={onClose} disabled={running || saving} data-testid="detail-close" style={{ background: "none", border: "none", cursor: (running || saving) ? "not-allowed" : "pointer", color: (running || saving) ? t.textFaint : t.textMuted, fontSize: 16, padding: 0 }} title={(running || saving) ? "Operation in progress..." : undefined}>✕</button>
         </div>
 
         {!editing && (

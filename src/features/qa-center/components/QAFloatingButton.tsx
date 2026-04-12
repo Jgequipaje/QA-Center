@@ -143,6 +143,7 @@ export default function QAFloatingButton() {
           buttonSize={buttonSize}
           hasIssues={nekoActive}
           spriteUrl={nekoSpriteUrl}
+          baseUrl={baseUrl}
         />
       )}
       <button

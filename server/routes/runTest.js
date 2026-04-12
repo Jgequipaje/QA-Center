@@ -5,9 +5,7 @@ import { spawn } from "child_process";
 
 export const runTestRouter = Router();
 
-function dataFile(cwd) {
-  return path.join(cwd, "qa-issues.json");
-}
+function dataFile(cwd) { return path.join(cwd, "qa-issues.json"); }
 
 async function readIssues(cwd) {
   try { return JSON.parse(await fs.readFile(dataFile(cwd), "utf-8")); }
@@ -18,40 +16,79 @@ async function writeIssues(cwd, issues) {
   await fs.writeFile(dataFile(cwd), JSON.stringify(issues, null, 2));
 }
 
-/**
- * Validate that a test file path is safe:
- * - Must be a relative path (no absolute paths)
- * - Must not contain path traversal sequences
- * - Must match test file pattern
- */
 function isSafeTestFile(filePath, cwd) {
-  if (typeof filePath !== "string") return false;
-  if (path.isAbsolute(filePath)) return false;
-  const resolved = path.resolve(cwd, filePath);
-  if (!resolved.startsWith(cwd)) return false;
-  if (!/\.(spec|test)\.(ts|js)$/.test(filePath)) return false;
-  return true;
+  if (typeof filePath !== "string" || path.isAbsolute(filePath)) return false;
+  if (!path.resolve(cwd, filePath).startsWith(cwd)) return false;
+  return /\.(spec|test)\.(ts|js)$/.test(filePath);
 }
 
+/**
+ * Run: npx playwright test <file> -g "<partial title>" --reporter=json
+ * Simple, no config generation, no tags required.
+ */
 function runPlaywright(testFile, grepTitle, cwd) {
   return new Promise((resolve) => {
-    // Use spawn with array args — no shell interpolation, no injection risk
-    const proc = spawn(
-      "npx",
-      ["playwright", "test", testFile, "--grep", grepTitle, "--reporter=line", "--timeout=30000"],
-      {
-        cwd,
-        shell: false, // explicitly no shell
-        env: { ...process.env, PLAYWRIGHT_HTML_OPEN: "never" },
-      }
-    );
+    const reportFile = path.join(cwd, ".qa-report.json");
+
+    // Use a short keyword from the title to avoid shell quoting issues
+    // e.g. "should open drawer when button is clicked" -> "open drawer"
+    const words = grepTitle.trim().split(/\s+/);
+    const keyword = words.slice(1, 4).join(" ") || words[0]; // skip "should", take next 3 words
+
+    const args = ["playwright", "test", testFile, "-g", keyword, "--reporter=json", "--workers=1"];
+
+    const proc = spawn("npx", args, {
+      cwd,
+      shell: true,
+      env: { ...process.env, PLAYWRIGHT_HTML_OPEN: "never", PLAYWRIGHT_JSON_OUTPUT_NAME: reportFile },
+    });
 
     let output = "";
     proc.stdout?.on("data", (d) => { output += d.toString(); });
     proc.stderr?.on("data", (d) => { output += d.toString(); });
-    proc.on("close", (code) => resolve({ exitCode: code ?? 1, output }));
-    proc.on("error", (err) => resolve({ exitCode: 1, output: err.message }));
+    proc.on("close", (code) => resolve({ exitCode: code ?? 1, output, reportFile }));
+    proc.on("error", (err) => resolve({ exitCode: 1, output: err.message, reportFile }));
   });
+}
+
+/**
+ * Parse Playwright JSON report.
+ * Returns map of testTitle -> { passed, message }
+ */
+async function parseReport(reportFile) {
+  const results = new Map();
+  try {
+    const raw = await fs.readFile(reportFile, "utf-8");
+    const report = JSON.parse(raw);
+
+    function walk(suites) {
+      for (const suite of suites ?? []) {
+        for (const spec of suite.specs ?? []) {
+          const passed = spec.tests?.every((t) =>
+            t.results?.every((r) => r.status === "passed")
+          ) ?? false;
+
+          let message = passed ? "Test passed successfully." : "";
+          if (!passed) {
+            for (const test of spec.tests ?? []) {
+              for (const result of test.results ?? []) {
+                if (result.error?.message) {
+                  message = result.error.message.slice(0, 500);
+                  break;
+                }
+              }
+              if (message) break;
+            }
+            if (!message) message = "Test failed.";
+          }
+          results.set(spec.title, { passed, message });
+        }
+        walk(suite.suites);
+      }
+    }
+    walk(report.suites);
+  } catch { /* report missing or malformed */ }
+  return results;
 }
 
 // POST /api/qa-issues/:id/run-test
@@ -64,39 +101,50 @@ runTestRouter.post("/:id/run-test", async (req, res) => {
   if (idx === -1) return res.status(404).json({ error: "Issue not found." });
   const issue = issues[idx];
   if (!issue.linkedTest) return res.status(400).json({ error: "No linked test." });
-
-  const testFile = issue.linkedTest.file;
-
-  // Validate file path before executing anything
-  if (!isSafeTestFile(testFile, cwd)) {
+  if (!isSafeTestFile(issue.linkedTest.file, cwd)) {
     return res.status(400).json({ error: "Invalid or unsafe test file path." });
   }
 
-  const grepTitle = String(issue.linkedTest.testTitle ?? "").slice(0, 200);
+  const { file, testTitle } = issue.linkedTest;
   const now = new Date().toISOString();
 
-  console.log(`\n[QA Center] Running test: ${testFile} — "${grepTitle}"\n`);
-  const { exitCode, output } = await runPlaywright(testFile, grepTitle, cwd);
+  console.log(`\n[QA Center] Running: ${file} -g "${testTitle}"\n`);
+  const { exitCode, output, reportFile } = await runPlaywright(file, testTitle, cwd);
+
+  const results = await parseReport(reportFile);
+  try { await fs.unlink(reportFile); } catch { /* ignore */ }
+
+  // Match by partial title (case-insensitive)
+  const titleLower = testTitle.toLowerCase();
+  let match = results.get(testTitle); // exact first
+  if (!match) {
+    for (const [key, val] of results) {
+      if (key.toLowerCase().includes(titleLower) || titleLower.includes(key.toLowerCase())) {
+        match = val;
+        break;
+      }
+    }
+  }
 
   let result;
   let message;
 
-  if (exitCode === 0) {
-    result = "passed";
-    message = "Test passed successfully.";
+  if (match) {
+    result = match.passed ? "passed" : "failed";
+    message = match.message;
   } else {
-    result = "failed";
     const stripAnsi = (s) => s.replace(/\x1B\[[0-9;]*m/g, "");
-    const lines = stripAnsi(output).split("\n");
-    const errorIdx = lines.findIndex((l) =>
-      l.includes("Error:") || l.includes("TimeoutError") || l.includes("expect(")
-    );
-    if (errorIdx !== -1) {
-      message = lines.slice(errorIdx, errorIdx + 5).map((l) => l.trim()).filter(Boolean).join("\n");
-    } else {
-      message = lines.find((l) => l.includes("FAILED"))?.trim() ?? "Test failed.";
-    }
+    const lines = stripAnsi(output).split("\n").map((l) => l.trim()).filter(Boolean);
+    result = exitCode === 0 ? "passed" : "failed";
+    message = lines.slice(-10).join("\n") || "Test not found in report.";
   }
+
+  // Debug
+  await fs.writeFile(
+    path.join(cwd, "playwright-debug.txt"),
+    `Title: ${testTitle}\nFile: ${file}\nExit: ${exitCode}\nResult: ${result}\n\n${message}\n\nRaw:\n${output}`,
+    "utf-8"
+  ).catch(() => {});
 
   issues[idx] = { ...issue, updatedAt: Date.now(), automationStatus: { result, lastRun: now, message } };
   await writeIssues(cwd, issues);

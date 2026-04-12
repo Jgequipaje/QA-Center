@@ -8,6 +8,7 @@ export type LinkedTest = {
     describe?: string;
     testTitle: string;
     fullTitle: string;
+    tag?: string;
 };
 export type AutomationStatus = {
     result: AutomationResult;

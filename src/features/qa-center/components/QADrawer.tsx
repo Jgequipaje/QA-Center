@@ -85,8 +85,8 @@ export default function QADrawer() {
 
   return (
     <>
-      <div onClick={closeDrawer} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 999 }} />
-      <div style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: "min(440px, 100vw)", background: t.bg, borderLeft: `1px solid ${t.border}`, zIndex: 1000, display: "flex", flexDirection: "column", boxShadow: "-4px 0 24px rgba(0,0,0,0.2)" }}>
+      <div onClick={closeDrawer} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 1002 }} />
+      <div style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: "min(440px, 100vw)", background: t.bg, borderLeft: `1px solid ${t.border}`, zIndex: 1003, display: "flex", flexDirection: "column", boxShadow: "-4px 0 24px rgba(0,0,0,0.2)" }}>
 
         {/* Header */}
         <div style={{ padding: "14px 16px", borderBottom: `1px solid ${t.border}`, background: t.bgSubtle, display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>

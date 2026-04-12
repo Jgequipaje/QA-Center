@@ -9,6 +9,7 @@ export type LinkedTest = {
   describe?: string;
   testTitle: string;
   fullTitle: string;
+  tag?: string; // e.g. "@issue-abc123" — used for reliable grep
 };
 
 export type AutomationStatus = {

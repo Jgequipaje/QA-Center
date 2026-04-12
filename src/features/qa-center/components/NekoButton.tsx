@@ -28,20 +28,16 @@ const IDLE_SEQUENCE: SpriteName[]   = ["idle", "idle", "idle", "idle", "idle", "
 const ACTIVE_SEQUENCE: SpriteName[] = ["idle", "idle", "idle", "idle", "alert", "alert", "scratchSelf", "scratchSelf", "scratchSelf", "scratchSelf", "scratchSelf", "scratchSelf", "idle", "idle", "idle", "idle", "idle", "idle", "idle", "idle", "scratchSelf", "scratchSelf", "scratchSelf", "scratchSelf", "idle", "idle", "idle", "idle", "idle", "idle"];
 
 type Props = {
-  /** x of button left edge */
   buttonX: number;
-  /** y of button top edge */
   buttonY: number;
-  /** button width/height in px */
   buttonSize: number;
-  /** true = has open issues → active animation */
   hasIssues: boolean;
-  /** URL to oneko.gif */
   spriteUrl?: string;
+  baseUrl: string;
 };
 
-export default function NekoButton({ buttonX, buttonY, buttonSize, hasIssues, spriteUrl }: Props) {
-  const url = spriteUrl ?? "https://raw.githubusercontent.com/Jgequipaje/qa-center/main/public/oneko.gif";
+export default function NekoButton({ buttonX, buttonY, buttonSize, hasIssues, spriteUrl, baseUrl }: Props) {
+  const url = spriteUrl ?? `${baseUrl}/oneko.gif`;
 
   const [bgPos, setBgPos] = useState(`${-3 * NEKO_SIZE}px ${-3 * NEKO_SIZE}px`);
   const seqIndexRef = useRef(0);
@@ -52,6 +48,9 @@ export default function NekoButton({ buttonX, buttonY, buttonSize, hasIssues, sp
   // Cat sits centered on top of the button, clamped to viewport
   const catX = buttonX + buttonSize / 2 - NEKO_SIZE / 2;
   const catY = Math.max(0, buttonY - NEKO_SIZE + 6);
+
+  // Debug: log position to confirm rendering
+  // console.log('[Neko] rendering at', catX, catY, 'button at', buttonX, buttonY);
 
   useEffect(() => {
     seqIndexRef.current = 0;
@@ -96,9 +95,10 @@ export default function NekoButton({ buttonX, buttonY, buttonSize, hasIssues, sp
         backgroundImage:    `url(${url})`,
         backgroundPosition: bgPos,
         backgroundRepeat:   "no-repeat",
+        backgroundSize:     "auto",
         imageRendering:     "pixelated",
         pointerEvents:      "none",
-        zIndex:             999,
+        zIndex:             1001,
       }}
     />
   );

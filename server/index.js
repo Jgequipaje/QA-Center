@@ -45,9 +45,11 @@ export function createServer({ cwd }) {
   app.use("/api/qa-issues", runTestRouter);
   app.use("/api/status", statusRouter);
 
+  // Always serve static assets from dist/ (includes oneko.gif, etc.)
+  app.use(express.static(DIST));
+
   // Serve built React UI (only if dist/ exists)
   if (distExists) {
-    app.use(express.static(DIST));
     app.get("*", (_req, res) => {
       res.sendFile(path.join(DIST, "index.html"));
     });

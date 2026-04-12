@@ -1,10 +1,16 @@
 import { Router } from "express";
 import { promises as fs } from "fs";
+import fsSync from "fs";
 import path from "path";
 
 export const testsRouter = Router();
 
 const TEST_FILE_PATTERN = /\.(spec|test)\.(ts|js)$/;
+const SCAN_DIRS = ["tests", "playwright-automation", "e2e"];
+
+// In-memory cache — invalidated when files change
+let cachedTests = null;
+let watchersStarted = false;
 
 function cacheFile(cwd) {
   return path.join(cwd, "qa-tests-cache.json");
@@ -40,12 +46,12 @@ function extractTests(source, filePath) {
 }
 
 async function scanDir(dir, depth = 0) {
-  if (depth > 5) return []; // prevent runaway recursion
+  if (depth > 5) return [];
   const files = [];
   try {
     const entries = await fs.readdir(dir, { withFileTypes: true });
     for (const entry of entries) {
-      if (entry.isSymbolicLink()) continue; // skip symlinks to avoid traversal
+      if (entry.isSymbolicLink()) continue;
       const full = path.join(dir, entry.name);
       if (entry.isDirectory() && entry.name !== "node_modules" && !entry.name.startsWith(".")) {
         files.push(...await scanDir(full, depth + 1));
@@ -58,9 +64,7 @@ async function scanDir(dir, depth = 0) {
 }
 
 async function discoverTests(cwd) {
-  const SCAN_DIRS = ["tests", "playwright-automation", "e2e"];
   const allTests = [];
-
   for (const dir of SCAN_DIRS) {
     const files = await scanDir(path.join(cwd, dir));
     for (const file of files) {
@@ -75,21 +79,73 @@ async function discoverTests(cwd) {
   return allTests;
 }
 
-// GET /api/qa-tests — return cached tests
+// Debounce helper — avoids multiple rapid rescans on save
+function debounce(fn, ms) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), ms);
+  };
+}
+
+// Watch test directories and invalidate cache on any change
+function startWatchers(cwd) {
+  if (watchersStarted) return;
+  watchersStarted = true;
+
+  const invalidate = debounce(async () => {
+    console.log("[QA Center] Test files changed — rescanning...");
+    cachedTests = null;
+    try {
+      const tests = await discoverTests(cwd);
+      cachedTests = tests;
+      await fs.writeFile(cacheFile(cwd), JSON.stringify(tests, null, 2));
+      console.log(`[QA Center] Found ${tests.length} test(s).`);
+    } catch (e) {
+      console.error("[QA Center] Rescan error:", e.message);
+    }
+  }, 500);
+
+  for (const dir of SCAN_DIRS) {
+    const fullDir = path.join(cwd, dir);
+    try {
+      fsSync.watch(fullDir, { recursive: true }, (event, filename) => {
+        if (filename && TEST_FILE_PATTERN.test(filename)) {
+          invalidate();
+        }
+      });
+    } catch { /* dir doesn't exist yet — skip */ }
+  }
+}
+
+// GET /api/qa-tests — return cached tests, rescan if stale
 testsRouter.get("/", async (req, res) => {
+  const cwd = req.appCwd;
+  startWatchers(cwd);
+
+  if (cachedTests) {
+    return res.json(cachedTests);
+  }
+
   try {
-    const raw = await fs.readFile(cacheFile(req.appCwd), "utf-8");
-    return res.json(JSON.parse(raw));
+    const raw = await fs.readFile(cacheFile(cwd), "utf-8");
+    cachedTests = JSON.parse(raw);
+    return res.json(cachedTests);
   } catch {
-    const tests = await discoverTests(req.appCwd);
-    await fs.writeFile(cacheFile(req.appCwd), JSON.stringify(tests, null, 2));
+    const tests = await discoverTests(cwd);
+    cachedTests = tests;
+    await fs.writeFile(cacheFile(cwd), JSON.stringify(tests, null, 2));
     return res.json(tests);
   }
 });
 
 // POST /api/qa-tests — force rescan
 testsRouter.post("/", async (req, res) => {
-  const tests = await discoverTests(req.appCwd);
-  await fs.writeFile(cacheFile(req.appCwd), JSON.stringify(tests, null, 2));
+  const cwd = req.appCwd;
+  startWatchers(cwd);
+  cachedTests = null;
+  const tests = await discoverTests(cwd);
+  cachedTests = tests;
+  await fs.writeFile(cacheFile(cwd), JSON.stringify(tests, null, 2));
   res.json({ count: tests.length, tests });
 });

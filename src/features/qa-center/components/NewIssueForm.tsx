@@ -83,7 +83,7 @@ export default function NewIssueForm({ onClose, origin = "manual" }: Props) {
         reproSteps: reproSteps.trim() || undefined,
         expected: expected.trim() || undefined,
         actual: actual.trim() || undefined,
-        linkedTest: selectedTest,
+        linkedTest: selectedTest ? { ...selectedTest, tag: `@issue-${now}` } : undefined,
         automationStatus: selectedTest ? { result: "not_run", lastRun: null, message: "" } : undefined,
         createdAt: now,
         updatedAt: now,

@@ -9,11 +9,6 @@ playwright-report/
 playwright-automation/
 e2e/
 
-# Local dev only
-test-host.html
-QA-CENTER-STANDALONE.md
-playwright.config.ts
-
 # Editor
 .vscode/
 .idea/
@@ -26,3 +21,6 @@ Thumbs.db
 # Env
 .env
 .env.local
+playwright-debug.txt
+.qa-run-*.config.mjs
+.qa-report.json
