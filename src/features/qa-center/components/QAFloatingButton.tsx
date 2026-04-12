@@ -136,7 +136,7 @@ export default function QAFloatingButton() {
 
   return (
     <>
-      {neko && (
+      {neko && pos && (
         <NekoButton
           buttonX={pos.x}
           buttonY={pos.y}

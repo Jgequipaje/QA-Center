@@ -369,7 +369,7 @@ function Ye() {
   if (!v) return null;
   const E = e === "dark" ? m.dark : m.light;
   return /* @__PURE__ */ o(V, { children: [
-    C && /* @__PURE__ */ r(
+    C && v && /* @__PURE__ */ r(
       Ue,
       {
         buttonX: v.x,
