@@ -9,13 +9,13 @@ A draggable floating QA issue tracker for your React app. Zero database — issu
 ## Install
 
 ```bash
-npm install github:your-username/qa-center
+npm install github:Jgequipaje/qa-center
 ```
 
 Pin to a specific release:
 
 ```bash
-npm install github:your-username/qa-center#v0.1.0-beta
+npm install github:Jgequipaje/qa-center#v0.1.0-beta
 ```
 
 Requires React 19 as a peer dependency.
@@ -99,7 +99,7 @@ Issues are saved to `qa-issues.json` in the directory where you run the command.
 ## Local Development
 
 ```bash
-git clone https://github.com/your-username/qa-center
+git clone https://github.com/Jgequipaje/qa-center
 cd qa-center
 npm install
 
@@ -117,3 +117,9 @@ The Vite dev server proxies `/api` to `localhost:3333` automatically.
 npm run build
 node bin/cli.js
 ```
+
+---
+
+## License
+
+MIT © [Jgequipaje](https://github.com/Jgequipaje)
