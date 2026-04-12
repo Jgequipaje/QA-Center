@@ -89,7 +89,7 @@ Issues are saved to `qa-issues.json` in the directory where you run the command.
 - Log bugs, features, and notes from a slide-out drawer
 - Status workflow: `open → in_progress → ready_for_qa → verified → closed`
 - Search and filter by status, severity, and type
-- Import issues from a Markdown file
+
 - Link and run Playwright tests from the issue detail panel
 - Dark / light theme toggle
 - Draggable button that snaps to left or right edge

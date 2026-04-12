@@ -1,5 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 
+/**
+ * Neko cat animation
+ *
+ * Sprite sheet and animation concept based on oneko.js by adryd325
+ * https://github.com/adryd325/oneko.js
+ *
+ * Original Neko software (1989) by Naoshi Watanabe.
+ * oneko.gif sprite from the classic X11 neko port.
+ */
+
 // Sprite positions from oneko.js (col, row) — each frame is 32x32px
 const SPRITES = {
   idle:        [[-3, -3]],

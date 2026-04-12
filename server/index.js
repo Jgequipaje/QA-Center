@@ -19,8 +19,19 @@ const distExists = fs.existsSync(path.join(DIST, "index.html"));
 export function createServer({ cwd }) {
   const app = express();
 
-  app.use(cors());
-  app.use(express.json());
+  // Localhost-only CORS — this is a local dev tool, only allow local origins
+  app.use(cors({
+    origin: (origin, cb) => {
+      // Allow requests with no origin (curl, Postman) and localhost origins
+      if (!origin || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+        return cb(null, true);
+      }
+      cb(new Error("CORS: only localhost origins allowed"));
+    },
+  }));
+
+  // Limit JSON payload size to prevent memory exhaustion
+  app.use(express.json({ limit: "1mb" }));
 
   // Inject cwd into every request so routes know where to read/write files
   app.use((req, _res, next) => {

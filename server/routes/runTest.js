@@ -18,13 +18,33 @@ async function writeIssues(cwd, issues) {
   await fs.writeFile(dataFile(cwd), JSON.stringify(issues, null, 2));
 }
 
-function runCommand(command, cwd) {
+/**
+ * Validate that a test file path is safe:
+ * - Must be a relative path (no absolute paths)
+ * - Must not contain path traversal sequences
+ * - Must match test file pattern
+ */
+function isSafeTestFile(filePath, cwd) {
+  if (typeof filePath !== "string") return false;
+  if (path.isAbsolute(filePath)) return false;
+  const resolved = path.resolve(cwd, filePath);
+  if (!resolved.startsWith(cwd)) return false;
+  if (!/\.(spec|test)\.(ts|js)$/.test(filePath)) return false;
+  return true;
+}
+
+function runPlaywright(testFile, grepTitle, cwd) {
   return new Promise((resolve) => {
-    const proc = spawn(command, {
-      cwd,
-      shell: true,
-      env: { ...process.env, PLAYWRIGHT_HTML_OPEN: "never" },
-    });
+    // Use spawn with array args — no shell interpolation, no injection risk
+    const proc = spawn(
+      "npx",
+      ["playwright", "test", testFile, "--grep", grepTitle, "--reporter=line", "--timeout=30000"],
+      {
+        cwd,
+        shell: false, // explicitly no shell
+        env: { ...process.env, PLAYWRIGHT_HTML_OPEN: "never" },
+      }
+    );
 
     let output = "";
     proc.stdout?.on("data", (d) => { output += d.toString(); });
@@ -45,15 +65,18 @@ runTestRouter.post("/:id/run-test", async (req, res) => {
   const issue = issues[idx];
   if (!issue.linkedTest) return res.status(400).json({ error: "No linked test." });
 
-  // Use just the testTitle for grep — avoids shell issues with ">" in fullTitle on Windows
-  const safeTitle = issue.linkedTest.testTitle.replace(/["`$\\]/g, "").slice(0, 200);
+  const testFile = issue.linkedTest.file;
+
+  // Validate file path before executing anything
+  if (!isSafeTestFile(testFile, cwd)) {
+    return res.status(400).json({ error: "Invalid or unsafe test file path." });
+  }
+
+  const grepTitle = String(issue.linkedTest.testTitle ?? "").slice(0, 200);
   const now = new Date().toISOString();
 
-  const testFile = issue.linkedTest.file;
-  const command = `npx playwright test "${testFile}" --grep "${safeTitle}" --reporter=line --timeout=30000`;
-
-  console.log(`\n[QA Center] Running test:\n  ${command}\n`);
-  const { exitCode, output } = await runCommand(command, cwd);
+  console.log(`\n[QA Center] Running test: ${testFile} — "${grepTitle}"\n`);
+  const { exitCode, output } = await runPlaywright(testFile, grepTitle, cwd);
 
   let result;
   let message;

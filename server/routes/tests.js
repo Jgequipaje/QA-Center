@@ -39,14 +39,16 @@ function extractTests(source, filePath) {
   return results;
 }
 
-async function scanDir(dir) {
+async function scanDir(dir, depth = 0) {
+  if (depth > 5) return []; // prevent runaway recursion
   const files = [];
   try {
     const entries = await fs.readdir(dir, { withFileTypes: true });
     for (const entry of entries) {
+      if (entry.isSymbolicLink()) continue; // skip symlinks to avoid traversal
       const full = path.join(dir, entry.name);
       if (entry.isDirectory() && entry.name !== "node_modules" && !entry.name.startsWith(".")) {
-        files.push(...await scanDir(full));
+        files.push(...await scanDir(full, depth + 1));
       } else if (entry.isFile() && TEST_FILE_PATTERN.test(entry.name)) {
         files.push(full);
       }

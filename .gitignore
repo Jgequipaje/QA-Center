@@ -7,6 +7,12 @@ qa-tests-cache.json
 # Test artifacts
 test-results/
 playwright-report/
+playwright-automation/
+e2e/
+
+# Local dev only
+test-host.html
+QA-CENTER-STANDALONE.md
 
 # Editor
 .vscode/

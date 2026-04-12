@@ -1,8 +1,15 @@
 import { Router } from "express";
 import { promises as fs } from "fs";
 import path from "path";
+import { randomUUID } from "crypto";
 
 export const issuesRouter = Router();
+
+const VALID_STATUSES = new Set(["open", "in_progress", "ready_for_qa", "verified", "closed"]);
+const VALID_SEVERITIES = new Set(["critical", "high", "medium", "low", "info"]);
+const VALID_ORIGINS = new Set(["manual", "imported_markdown", "feature", "note"]);
+const FIELD_MAX = 10000; // max chars for long text fields
+const TITLE_MAX = 500;
 
 function dataFile(cwd) {
   return path.join(cwd, "qa-issues.json");
@@ -20,13 +27,21 @@ async function readIssues(cwd) {
       seen.add(i.id);
       return true;
     });
-  } catch {
+  } catch (e) {
+    if (e.code !== "ENOENT") console.error("[QA Center] Error reading issues:", e.message);
     return [];
   }
 }
 
 async function writeIssues(cwd, issues) {
   await fs.writeFile(dataFile(cwd), JSON.stringify(issues, null, 2), "utf-8");
+}
+
+function validateTextField(value, name, max = FIELD_MAX) {
+  if (value !== undefined && (typeof value !== "string" || value.length > max)) {
+    return `${name} must be a string under ${max} characters.`;
+  }
+  return null;
 }
 
 // GET /api/qa-issues
@@ -41,22 +56,45 @@ issuesRouter.post("/", async (req, res) => {
   if (!body?.title?.trim()) {
     return res.status(400).json({ error: "Title is required." });
   }
-  if (typeof body.title === "string" && body.title.length > 500) {
-    return res.status(400).json({ error: "Title too long." });
+  if (body.title.length > TITLE_MAX) {
+    return res.status(400).json({ error: `Title must be under ${TITLE_MAX} characters.` });
+  }
+  if (body.status && !VALID_STATUSES.has(body.status)) {
+    return res.status(400).json({ error: "Invalid status value." });
+  }
+  if (body.severity && !VALID_SEVERITIES.has(body.severity)) {
+    return res.status(400).json({ error: "Invalid severity value." });
+  }
+  if (body.origin && !VALID_ORIGINS.has(body.origin)) {
+    return res.status(400).json({ error: "Invalid origin value." });
+  }
+
+  for (const field of ["description", "area", "reproSteps", "expected", "actual", "notes", "rawContent"]) {
+    const err = validateTextField(body[field], field);
+    if (err) return res.status(400).json({ error: err });
   }
 
   const issues = await readIssues(req.appCwd);
   const now = Date.now();
   const newIssue = {
-    ...body,
-    id: `issue-${now}-${Math.random().toString(36).slice(2, 6)}`,
+    id: `issue-${now}-${randomUUID().slice(0, 8)}`,
+    origin: body.origin ?? "manual",
+    title: body.title.trim(),
+    status: body.status ?? "open",
     createdAt: now,
     updatedAt: now,
+    ...(body.description  && { description:  body.description }),
+    ...(body.severity     && { severity:     body.severity }),
+    ...(body.area         && { area:         body.area }),
+    ...(body.reproSteps   && { reproSteps:   body.reproSteps }),
+    ...(body.expected     && { expected:     body.expected }),
+    ...(body.actual       && { actual:       body.actual }),
+    ...(body.notes        && { notes:        body.notes }),
+    ...(body.rawContent   && { rawContent:   body.rawContent }),
+    ...(body.sourceRef    && { sourceRef:    body.sourceRef }),
+    ...(body.sourceFile   && { sourceFile:   body.sourceFile }),
+    ...(body.linkedTest   && { linkedTest:   body.linkedTest }),
   };
-
-  if (issues.some((i) => i.id === newIssue.id)) {
-    newIssue.id = `issue-${now}-${Math.random().toString(36).slice(2, 8)}`;
-  }
 
   await writeIssues(req.appCwd, [newIssue, ...issues]);
   res.status(201).json(newIssue);
@@ -69,6 +107,16 @@ issuesRouter.patch("/:id", async (req, res) => {
   const issues = await readIssues(req.appCwd);
   const idx = issues.findIndex((i) => i.id === id);
   if (idx === -1) return res.status(404).json({ error: "Not found." });
+
+  if (body.status && !VALID_STATUSES.has(body.status)) {
+    return res.status(400).json({ error: "Invalid status value." });
+  }
+  if (body.severity && !VALID_SEVERITIES.has(body.severity)) {
+    return res.status(400).json({ error: "Invalid severity value." });
+  }
+  if (body.title !== undefined && (!body.title.trim() || body.title.length > TITLE_MAX)) {
+    return res.status(400).json({ error: "Invalid title." });
+  }
 
   const ALLOWED = [
     "title", "status", "description", "severity", "area",
