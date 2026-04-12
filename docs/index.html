@@ -357,25 +357,70 @@ export default function RootLayout({ children }) {
     <div class="section-label">CLI</div>
     <h2>Backend server options</h2>
     <p>The CLI starts the Express server that handles all reads and writes to <span class="inline-code">qa-issues.json</span>.</p>
-    <pre><code>npx qa-center                   # default port 3333, opens browser
-npx qa-center --port 4000       # custom port
-npx qa-center --no-open         # skip auto-opening browser</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
-    <div class="table-wrap" style="margin-top:24px">
+    <pre><code>npx qa-center                           # default port 3333, opens browser
+npx qa-center --port 4000               # custom port
+npx qa-center --no-open                 # skip auto-opening browser
+npx qa-center --data-dir ./qa-data      # store data outside Vite watch scope</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
+
+    <div class="callout">&#x26A0;&#xFE0F; Using Vite + React Router v7? Updating issues may trigger HMR reloads because Vite watches <span class="inline-code">qa-issues.json</span>. Fix: run with <span class="inline-code">--data-dir ../qa-data</span> to store the file outside your project root.</div>
+
+    <h3 style="margin-top:32px">API Endpoints</h3>
+    <p>All endpoints are served at <span class="inline-code">http://localhost:3333</span> (or your configured port).</p>
+
+    <p style="margin-top:16px; font-weight:700; color:var(--text)">Issues</p>
+    <div class="table-wrap">
       <table>
-        <thead>
-          <tr><th>Method</th><th>Route</th><th>Description</th></tr>
-        </thead>
+        <thead><tr><th>Method</th><th>Route</th><th>Description</th></tr></thead>
         <tbody>
           <tr><td>GET</td><td>/api/qa-issues</td><td>Return all issues, newest first</td></tr>
           <tr><td>POST</td><td>/api/qa-issues</td><td>Create a new issue</td></tr>
           <tr><td>PATCH</td><td>/api/qa-issues/:id</td><td>Update issue fields or status</td></tr>
           <tr><td>DELETE</td><td>/api/qa-issues/:id</td><td>Delete an issue</td></tr>
-          <tr><td>GET</td><td>/api/qa-tests</td><td>Return cached Playwright test list</td></tr>
-          <tr><td>POST</td><td>/api/qa-tests</td><td>Re-scan and refresh test list</td></tr>
           <tr><td>POST</td><td>/api/qa-issues/:id/run-test</td><td>Run the linked Playwright test</td></tr>
         </tbody>
       </table>
     </div>
+
+    <p style="margin-top:20px; font-weight:700; color:var(--text)">Tests</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Method</th><th>Route</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>GET</td><td>/api/qa-tests</td><td>Return cached Playwright test list</td></tr>
+          <tr><td>POST</td><td>/api/qa-tests</td><td>Force rescan of test directories</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="margin-top:20px; font-weight:700; color:var(--text)">Status</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Method</th><th>Route</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>GET</td><td>/api/status</td><td>Server health, issue summary, test cache info</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top:28px">POST /api/qa-issues — body</h3>
+    <pre><code>{
+  "title": "Bug title",          // required
+  "origin": "manual",            // manual | feature | note | imported_markdown
+  "status": "open",              // open | in_progress | ready_for_qa | verified | closed
+  "severity": "high",            // critical | high | medium | low | info
+  "area": "Auth",
+  "description": "What is the bug?",
+  "reproSteps": "1. Go to...",
+  "expected": "Should work",
+  "actual": "Doesn't work",
+  "notes": "Additional notes"
+}</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
+
+    <h3 style="margin-top:20px">PATCH /api/qa-issues/:id — body</h3>
+    <pre><code>{
+  "status": "in_progress",
+  "notes": "Updated notes"
+}</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
   </section>
 
 </div>

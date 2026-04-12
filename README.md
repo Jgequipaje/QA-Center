@@ -102,7 +102,66 @@ Issues are saved to `qa-issues.json` in the directory where you run the command 
 
 ---
 
-## Local Development
+## API Reference
+
+All endpoints are served by the Express backend on `http://localhost:<port>`.
+
+### Issues
+
+| Method | Route | Description |
+|---|---|---|
+| `GET` | `/api/qa-issues` | Return all issues, sorted newest first |
+| `POST` | `/api/qa-issues` | Create a new issue |
+| `PATCH` | `/api/qa-issues/:id` | Update issue fields or status |
+| `DELETE` | `/api/qa-issues/:id` | Delete an issue |
+| `POST` | `/api/qa-issues/:id/run-test` | Run the linked Playwright test |
+
+### Tests
+
+| Method | Route | Description |
+|---|---|---|
+| `GET` | `/api/qa-tests` | Return cached Playwright test list |
+| `POST` | `/api/qa-tests` | Force rescan of test directories |
+
+### Status
+
+| Method | Route | Description |
+|---|---|---|
+| `GET` | `/api/status` | Server health, issue summary, test cache info |
+
+#### POST /api/qa-issues — body
+
+```json
+{
+  "title": "Bug title",
+  "origin": "manual",
+  "status": "open",
+  "severity": "high",
+  "area": "Auth",
+  "description": "What is the bug?",
+  "reproSteps": "1. Go to...",
+  "expected": "Should work",
+  "actual": "Doesn't work",
+  "notes": "Additional notes"
+}
+```
+
+#### PATCH /api/qa-issues/:id — body
+
+```json
+{
+  "status": "in_progress",
+  "notes": "Updated notes"
+}
+```
+
+Valid `status` values: `open` `in_progress` `ready_for_qa` `verified` `closed`
+
+Valid `severity` values: `critical` `high` `medium` `low` `info`
+
+Valid `origin` values: `manual` `feature` `note` `imported_markdown`
+
+
 
 ```bash
 git clone https://github.com/Jgequipaje/qa-center
