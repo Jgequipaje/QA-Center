@@ -13,6 +13,7 @@ e2e/
 # Local dev only
 test-host.html
 QA-CENTER-STANDALONE.md
+playwright.config.ts
 
 # Editor
 .vscode/
