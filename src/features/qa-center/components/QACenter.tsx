@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { ThemeProvider } from "@/lib/theme";
 import { QACenterButtonColor, QACenterShape } from "../types/index";
 import { QACenterConfigContext } from "./QACenterConfigContext";
@@ -46,6 +46,11 @@ export function QACenter({
 }: QACenterProps) {
   const baseUrl = resolveBaseUrl(apiBaseUrl, port);
   const resolvedColor = resolveButtonColor(buttonColor);
+
+  // SSR guard — don't render on server (window/localStorage not available)
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted) return null;
 
   const content = (
     <QACenterConfigContext.Provider

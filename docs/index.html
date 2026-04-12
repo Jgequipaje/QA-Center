@@ -304,6 +304,54 @@ echo "qa-issues.json" >> .gitignore</code><button class="copy-btn" onclick="copy
 &lt;QACenter neko /&gt;</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
   </section>
 
+  <!-- SSR / FRAMEWORKS -->
+  <section id="ssr">
+    <div class="section-label">Framework Usage</div>
+    <h2>Next.js &amp; React Router v7</h2>
+    <p>QA Center uses <span class="inline-code">window</span>, <span class="inline-code">localStorage</span>, and <span class="inline-code">requestAnimationFrame</span> which don't exist on the server. The component handles this with a built-in SSR guard, but placement matters.</p>
+
+    <h3 style="margin-top:24px">React Router v7 (framework mode)</h3>
+    <p>Place it in your root layout inside <span class="inline-code">&lt;body&gt;</span>. The SSR guard handles the rest.</p>
+    <pre><code>// app/root.tsx
+import { QACenter } from "@purr/qa-center";
+
+export function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    &lt;html lang="en"&gt;
+      &lt;head&gt;...&lt;/head&gt;
+      &lt;body&gt;
+        {children}
+        &lt;QACenter port={3333} /&gt;
+        &lt;ScrollRestoration /&gt;
+        &lt;Scripts /&gt;
+      &lt;/body&gt;
+    &lt;/html&gt;
+  );
+}</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
+
+    <h3 style="margin-top:24px">Next.js (App Router)</h3>
+    <p>Wrap it in a client component first.</p>
+    <pre><code>// components/QACenterWrapper.tsx
+"use client";
+import { QACenter } from "@purr/qa-center";
+export default function QACenterWrapper() {
+  return &lt;QACenter port={3333} /&gt;;
+}
+
+// app/layout.tsx
+import QACenterWrapper from "@/components/QACenterWrapper";
+export default function RootLayout({ children }) {
+  return (
+    &lt;html&gt;&lt;body&gt;
+      {children}
+      &lt;QACenterWrapper /&gt;
+    &lt;/body&gt;&lt;/html&gt;
+  );
+}</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
+
+    <div class="callout">&#x1F4A1; The component returns null on the server and mounts only after hydration &#x2014; no dynamic imports or lazy loading needed on your end.</div>
+  </section>
+
   <!-- CLI -->
   <section id="cli">
     <div class="section-label">CLI</div>

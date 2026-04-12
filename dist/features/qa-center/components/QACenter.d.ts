@@ -15,4 +15,4 @@ export interface QACenterProps {
     /** Custom URL for the oneko sprite sheet. Defaults to the GitHub CDN. */
     nekoSpriteUrl?: string;
 }
-export declare function QACenter({ buttonColor, buttonSize, shape, logo, name, apiBaseUrl, port, ownTheme, neko, nekoSpriteUrl, }: QACenterProps): import("react/jsx-runtime").JSX.Element;
+export declare function QACenter({ buttonColor, buttonSize, shape, logo, name, apiBaseUrl, port, ownTheme, neko, nekoSpriteUrl, }: QACenterProps): import("react/jsx-runtime").JSX.Element | null;
