@@ -1,5 +1,4 @@
 node_modules/
-dist/
 qa-issues.json
 qa-tests-cache.json
 *.tgz

@@ -8,7 +8,6 @@
   },
   "scripts": {
     "dev": "vite",
-    "prepare": "cross-env BUILD_MODE=lib vite build && tsc -p tsconfig.lib.json",
     "build": "tsc -b && vite build",
     "build:lib": "cross-env BUILD_MODE=lib vite build && tsc -p tsconfig.lib.json",
     "build:app": "tsc -b && vite build",

@@ -104,13 +104,13 @@ export default function IssueDetail({ issue, onClose }: Props) {
   function canTransitionTo(to: IssueStatus) {
     if (to !== "verified") return true;
     if (origin !== "manual") return true; // features/notes don't need a linked test
-    if (!hasLinkedTest) return false;
-    return autoResult === "passed";
+    if (!hasLinkedTest) return true; // no linked test = no gating
+    return autoResult === "passed"; // has a linked test — it must have passed
   }
 
   function blockReason(to: IssueStatus): string | null {
     if (to !== "verified" || origin !== "manual") return null;
-    if (!hasLinkedTest) return "A linked Playwright test is required before marking as verified.";
+    if (!hasLinkedTest) return null;
     if (autoResult !== "passed") return "The linked test must pass before this issue can be marked verified.";
     return null;
   }
