@@ -75,12 +75,18 @@ That's it. Click the floating button in the corner to open the drawer.
 ## CLI Options
 
 ```bash
-npx qa-center                  # default port 3333
-npx qa-center --port 4000      # custom port
-npx qa-center --no-open        # skip auto-opening browser
+npx qa-center                           # default port 3333
+npx qa-center --port 4000               # custom port
+npx qa-center --no-open                 # skip auto-opening browser
+npx qa-center --data-dir ./qa-data      # store qa-issues.json outside Vite's watch scope
 ```
 
-Issues are saved to `qa-issues.json` in the directory where you run the command. The file is git-friendly — commit it to share issue state with your team, or add it to `.gitignore` to keep it local.
+Issues are saved to `qa-issues.json` in the directory where you run the command (or `--data-dir` if specified). The file is git-friendly — commit it to share issue state with your team, or add it to `.gitignore` to keep it local.
+
+> **React Router v7 / Vite HMR tip:** If updating an issue status causes a full page reload, it's because Vite is watching `qa-issues.json`. Fix it by storing the data file outside your project:
+> ```bash
+> npx qa-center --data-dir ../qa-data
+> ```
 
 ---
 
