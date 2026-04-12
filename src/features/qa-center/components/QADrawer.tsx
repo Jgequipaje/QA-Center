@@ -18,7 +18,7 @@ export default function QADrawer() {
 
   const {
     isDrawerOpen, closeDrawer,
-    issues, filters, setFilters, switchTab, clearFilters,
+    issues, filters, setFilters, switchTab,
     selectedIssueId, selectIssue,
     isCreating, openCreateForm, closeCreateForm,
     isLoading,
