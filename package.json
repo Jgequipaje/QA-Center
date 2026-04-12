@@ -8,9 +8,9 @@
   },
   "scripts": {
     "dev": "vite",
-    "prepare": "cross-env BUILD_MODE=lib vite build",
+    "prepare": "cross-env BUILD_MODE=lib vite build && tsc -p tsconfig.lib.json",
     "build": "tsc -b && vite build",
-    "build:lib": "tsc -b && BUILD_MODE=lib vite build",
+    "build:lib": "cross-env BUILD_MODE=lib vite build && tsc -p tsconfig.lib.json",
     "build:app": "tsc -b && vite build",
     "preview": "vite preview",
     "qa:server": "node bin/cli.js",
