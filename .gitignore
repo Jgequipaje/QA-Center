@@ -1,6 +1,7 @@
 node_modules/
 qa-issues.json
 qa-tests-cache.json
+qa-issues_copy.json
 *.tgz
 
 # Test artifacts

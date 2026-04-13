@@ -19,8 +19,8 @@ createRoot(mountEl).render(
         ownTheme={false}
         name="My App QA - Jep"
         port={3333}
-        buttonColor={{ dark: '#7c3aed', light: 'red' }}
-        logo="🔍"
+        buttonColor={{ dark: '#406093', light: '#91D06C' }}
+        logo="💾"
       />
     </ThemeProvider>
   </StrictMode>

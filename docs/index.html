@@ -3,10 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>QA Center &#x2014; Docs</title>
+  <title>QA Center &#x2014; Documentation - Beta Release</title>
+  <meta name="description" content="A draggable floating panel for logging bugs, features, and notes — without leaving the browser. Zero database, zero config. Issues save to a JSON file.">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐈</text></svg>">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -93,7 +95,7 @@
 <body>
 
 <nav>
-  <a class="nav-logo" href="#">&#x1F43E; <span>QA Center</span></a>
+  <a class="nav-logo" href="#"><span>QA Center</span></a>
   <div class="nav-links">
     <a href="#install">Install</a>
     <a href="#usage">Usage</a>
@@ -128,7 +130,7 @@
         <div class="step-num">1</div>
         <div class="step-body">
           <h3>Install the package</h3>
-          <pre><code>npm install github:Jgequipaje/qa-center</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
+          <!-- <pre><code>npm install github:Jgequipaje/qa-center</code><button class="copy-btn" onclick="copy(this)">copy</button></pre> -->
           <p>Pin to a specific release tag:</p>
           <pre><code>npm install github:Jgequipaje/qa-center#v0.1.0-beta</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
         </div>
@@ -285,7 +287,7 @@ echo "qa-issues.json" >> .gitignore</code><button class="copy-btn" onclick="copy
           <tr><td>logo</td><td>ReactNode</td><td>&#x2014;</td><td>Custom icon rendered inside the button</td></tr>
           <tr><td>ownTheme</td><td>boolean</td><td>true</td><td>Set to <span class="inline-code">false</span> if your app already has a ThemeProvider</td></tr>
           <tr><td>neko</td><td>boolean</td><td>false</td><td>Show an animated cat sitting on the button</td></tr>
-          <tr><td>nekoSpriteUrl</td><td>string</td><td>&#x2014;</td><td>Custom sprite URL for the neko cat animation</td></tr>
+          <!-- <tr><td>nekoSpriteUrl</td><td>string</td><td>&#x2014;</td><td>Custom sprite URL for the neko cat animation</td></tr> -->
         </tbody>
       </table>
     </div>
@@ -426,7 +428,7 @@ npx qa-center --data-dir ./qa-data      # store data outside Vite watch scope</c
 </div>
 
 <footer>
-  <p>QA Center &middot; MIT License &middot; <a href="https://github.com/Jgequipaje/qa-center" target="_blank">GitHub</a></p>
+  <p>QA Center &middot; MIT License &middot; <a href="https://www.byjeff.dev/" target="_blank">byjeff.dev</a> &middot; <a href="https://www.kodecat.com/" target="_blank">kodecat.com</a></p>
   <p style="margin-top:8px">Neko cat sprite based on <a href="https://github.com/adryd325/oneko.js" target="_blank">oneko.js</a> by <a href="https://github.com/adryd325" target="_blank">adryd325</a> &middot; Original Neko software (1989) by Naoshi Watanabe</p>
 </footer>
 
