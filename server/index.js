@@ -20,15 +20,17 @@ export function createServer({ cwd }) {
   const app = express();
 
   // Localhost-only CORS — this is a local dev tool, only allow local origins
-  app.use(cors({
-    origin: (origin, cb) => {
-      // Allow requests with no origin (curl, Postman) and localhost origins
-      if (!origin || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
-        return cb(null, true);
-      }
-      cb(new Error("CORS: only localhost origins allowed"));
-    },
-  }));
+  app.use(
+    cors({
+      origin: (origin, cb) => {
+        // Allow requests with no origin (curl, Postman) and localhost origins
+        if (!origin || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+          return cb(null, true);
+        }
+        cb(new Error("CORS: only localhost origins allowed"));
+      },
+    })
+  );
 
   // Limit JSON payload size to prevent memory exhaustion
   app.use(express.json({ limit: "1mb" }));
@@ -55,12 +57,14 @@ export function createServer({ cwd }) {
     });
   } else {
     app.get("*", (_req, res) => {
-      res.status(503).send(
-        `<pre style="font-family:monospace;padding:2rem">` +
-        `QA Center API is running.\n\n` +
-        `UI not built yet. Run:\n\n  npm run build\n\nThen restart the server.\n\n` +
-        `Or use the Vite dev server:\n  npm run dev  (in a separate terminal)</pre>`
-      );
+      res
+        .status(503)
+        .send(
+          `<pre style="font-family:monospace;padding:2rem">` +
+            `QA Center API is running.\n\n` +
+            `UI not built yet. Run:\n\n  npm run build\n\nThen restart the server.\n\n` +
+            `Or use the Vite dev server:\n  npm run dev  (in a separate terminal)</pre>`
+        );
     });
   }
 

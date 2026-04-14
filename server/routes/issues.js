@@ -69,7 +69,15 @@ issuesRouter.post("/", async (req, res) => {
     return res.status(400).json({ error: "Invalid origin value." });
   }
 
-  for (const field of ["description", "area", "reproSteps", "expected", "actual", "notes", "rawContent"]) {
+  for (const field of [
+    "description",
+    "area",
+    "reproSteps",
+    "expected",
+    "actual",
+    "notes",
+    "rawContent",
+  ]) {
     const err = validateTextField(body[field], field);
     if (err) return res.status(400).json({ error: err });
   }
@@ -83,17 +91,17 @@ issuesRouter.post("/", async (req, res) => {
     status: body.status ?? "open",
     createdAt: now,
     updatedAt: now,
-    ...(body.description  && { description:  body.description }),
-    ...(body.severity     && { severity:     body.severity }),
-    ...(body.area         && { area:         body.area }),
-    ...(body.reproSteps   && { reproSteps:   body.reproSteps }),
-    ...(body.expected     && { expected:     body.expected }),
-    ...(body.actual       && { actual:       body.actual }),
-    ...(body.notes        && { notes:        body.notes }),
-    ...(body.rawContent   && { rawContent:   body.rawContent }),
-    ...(body.sourceRef    && { sourceRef:    body.sourceRef }),
-    ...(body.sourceFile   && { sourceFile:   body.sourceFile }),
-    ...(body.linkedTest   && { linkedTest:   body.linkedTest }),
+    ...(body.description && { description: body.description }),
+    ...(body.severity && { severity: body.severity }),
+    ...(body.area && { area: body.area }),
+    ...(body.reproSteps && { reproSteps: body.reproSteps }),
+    ...(body.expected && { expected: body.expected }),
+    ...(body.actual && { actual: body.actual }),
+    ...(body.notes && { notes: body.notes }),
+    ...(body.rawContent && { rawContent: body.rawContent }),
+    ...(body.sourceRef && { sourceRef: body.sourceRef }),
+    ...(body.sourceFile && { sourceFile: body.sourceFile }),
+    ...(body.linkedTest && { linkedTest: body.linkedTest }),
   };
 
   await writeIssues(req.appCwd, [newIssue, ...issues]);
@@ -119,10 +127,20 @@ issuesRouter.patch("/:id", async (req, res) => {
   }
 
   const ALLOWED = [
-    "title", "status", "description", "severity", "area",
-    "reproSteps", "expected", "actual", "notes",
-    "rawContent", "sourceRef", "sourceFile",
-    "linkedTest", "automationStatus",
+    "title",
+    "status",
+    "description",
+    "severity",
+    "area",
+    "reproSteps",
+    "expected",
+    "actual",
+    "notes",
+    "rawContent",
+    "sourceRef",
+    "sourceFile",
+    "linkedTest",
+    "automationStatus",
   ];
   const patch = {};
   for (const key of ALLOWED) {

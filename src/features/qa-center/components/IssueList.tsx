@@ -11,7 +11,12 @@ export default function IssueList({ issues, selectedId, onSelect }: Props) {
   return (
     <div style={{ overflowY: "auto", flex: 1 }}>
       {issues.map((issue) => (
-        <IssueCard key={issue.id} issue={issue} selected={selectedId === issue.id} onClick={() => onSelect(issue.id)} />
+        <IssueCard
+          key={issue.id}
+          issue={issue}
+          selected={selectedId === issue.id}
+          onClick={() => onSelect(issue.id)}
+        />
       ))}
     </div>
   );
