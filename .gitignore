@@ -31,3 +31,5 @@ playwright-debug.txt
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+.github/workflows/settings.yml
