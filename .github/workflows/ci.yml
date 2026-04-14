@@ -18,7 +18,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - run: npm ci
+      - run: npm ci --legacy-peer-deps
       - name: Run prettier --write
         run: npx prettier --write .
       - name: Commit formatting changes
@@ -37,7 +37,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - run: npm ci
+      - run: npm ci --legacy-peer-deps
       - run: npm run lint
 
   typecheck:
@@ -50,7 +50,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - run: npm ci
+      - run: npm ci --legacy-peer-deps
       - run: npm run typecheck
 
   audit:
@@ -61,7 +61,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - run: npm ci
+      - run: npm ci --legacy-peer-deps
       - run: npm audit --audit-level=moderate
 
   build:
@@ -72,7 +72,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - run: npm ci
+      - run: npm ci --legacy-peer-deps
       - run: npm run build
 
   playwright:
@@ -85,7 +85,7 @@ jobs:
         with:
           node-version: lts/*
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
       - name: Build application
         run: npm run build
       - name: Start dev server
