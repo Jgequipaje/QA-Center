@@ -10,9 +10,12 @@ export default defineConfig({
     "tests/**/*.spec.ts",
     "tests/**/*.test.ts",
   ],
-  timeout: 30000,
+  timeout: 3000,
+  reporter: [["html", { open: "never" }], ["line"]],
   use: {
     baseURL: "http://localhost:5173",
     headless: true,
+    screenshot: "only-on-failure",
+    trace: "on",
   },
 });

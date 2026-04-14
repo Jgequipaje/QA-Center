@@ -67,8 +67,14 @@ export default function QAFloatingButton() {
 
   useEffect(() => { setPos(loadPos() ?? defaultPos(buttonSize)); }, [buttonSize]);
 
-  // Load issues on mount so the badge count is correct immediately
-  useEffect(() => { loadIssues(baseUrl); }, [baseUrl]);
+  // Load issues on mount so the badge count is correct immediately,
+  // then poll every 5s while the drawer is open to pick up changes from other tabs/contexts.
+  useEffect(() => {
+    loadIssues(baseUrl);
+    if (!isDrawerOpen) return;
+    const id = setInterval(() => loadIssues(baseUrl), 5000);
+    return () => clearInterval(id);
+  }, [baseUrl, isDrawerOpen]);
 
   useEffect(() => {
     function onResize() {
@@ -151,6 +157,7 @@ export default function QAFloatingButton() {
       onPointerDown={onPointerDown}
       onClick={handleClick}
       title="QA Center"
+      data-testid="qa-floating-btn"
       style={{
         position: "fixed", left: pos.x, top: pos.y, zIndex: 998,
         width: buttonSize, height: buttonSize, borderRadius: shapeToRadius(shape),

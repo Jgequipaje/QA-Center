@@ -25,3 +25,9 @@ Thumbs.db
 playwright-debug.txt
 .qa-run-*.config.mjs
 .qa-report.json
+
+# Playwright
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

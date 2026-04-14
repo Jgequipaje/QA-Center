@@ -85,8 +85,8 @@ export default function QADrawer() {
 
   return (
     <>
-      <div onClick={closeDrawer} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 1002 }} />
-      <div style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: "min(440px, 100vw)", background: t.bg, borderLeft: `1px solid ${t.border}`, zIndex: 1003, display: "flex", flexDirection: "column", boxShadow: "-4px 0 24px rgba(0,0,0,0.2)" }}>
+      <div data-testid="qa-drawer-overlay" onClick={closeDrawer} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 1002 }} />
+      <div data-testid="qa-drawer" style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: "min(440px, 100vw)", background: t.bg, borderLeft: `1px solid ${t.border}`, zIndex: 1003, display: "flex", flexDirection: "column", boxShadow: "-4px 0 24px rgba(0,0,0,0.2)" }}>
 
         {/* Header */}
         <div style={{ padding: "14px 16px", borderBottom: `1px solid ${t.border}`, background: t.bgSubtle, display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
@@ -103,6 +103,7 @@ export default function QADrawer() {
                 <div ref={addBtnRef} style={{ position: "relative" }}>
                   <button
                     onClick={() => setShowAddMenu((v) => !v)}
+                    data-testid="qa-add-btn"
                     style={{ padding: "5px 12px", fontSize: 12, fontWeight: 600, background: t.btnActive, color: t.btnActiveTxt, border: "none", borderRadius: 6, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 4 }}
                   >
                     + Add <span style={{ fontSize: 10, opacity: 0.8 }}>▾</span>
@@ -117,6 +118,7 @@ export default function QADrawer() {
                         <button
                           key={type}
                           onClick={() => handleAddOption(type)}
+                          data-testid={`qa-add-${type}`}
                           style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 14px", fontSize: 12, fontWeight: 500, background: "none", border: "none", color: t.text, cursor: "pointer", fontFamily: "inherit" }}
                           onMouseEnter={(e) => (e.currentTarget.style.background = t.bgMuted)}
                           onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
@@ -129,7 +131,7 @@ export default function QADrawer() {
                 </div>
               </>
             )}
-            <button onClick={closeDrawer} style={{ background: "none", border: "none", cursor: "pointer", color: t.textMuted, fontSize: 18, lineHeight: 1, padding: "4px 6px" }}>✕</button>
+            <button onClick={closeDrawer} data-testid="qa-drawer-close" style={{ background: "none", border: "none", cursor: "pointer", color: t.textMuted, fontSize: 18, lineHeight: 1, padding: "4px 6px" }}>✕</button>
           </div>
         </div>
 
@@ -143,6 +145,7 @@ export default function QADrawer() {
                 placeholder="Search issues, features, notes..."
                 value={filters.search ?? ""}
                 onChange={(e) => { setFilters({ search: e.target.value || undefined, page: 1 }); }}
+                data-testid="qa-search"
                 style={{ width: "100%", padding: "6px 10px", fontSize: 12, background: t.bg, color: t.text, border: `1px solid ${t.border}`, borderRadius: 6, fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
               />
             </div>
@@ -159,6 +162,7 @@ export default function QADrawer() {
                   <button
                     key={value}
                     onClick={() => { switchTab(value); }}
+                    data-testid={`qa-tab-${value}`}
                     style={{ padding: "5px 12px", fontSize: 12, fontWeight: active ? 700 : 500, background: active ? t.bg : "transparent", color: active ? t.text : t.textMuted, border: active ? `1px solid ${t.border}` : "1px solid transparent", borderBottom: active ? `1px solid ${t.bg}` : "1px solid transparent", borderRadius: "6px 6px 0 0", cursor: "pointer", fontFamily: "inherit", marginBottom: -1, position: "relative", zIndex: active ? 1 : 0 }}
                   >
                     {label}
@@ -185,6 +189,7 @@ export default function QADrawer() {
                       <button
                         key={v}
                         onClick={() => { setFilters({ status: v as never, page: 1 }); }}
+                        data-testid={`qa-status-${v}`}
                         style={{ padding: "3px 10px", fontSize: 11, fontWeight: active ? 700 : 500, borderRadius: 99, border: `1px solid ${active ? t.accent : t.border}`, background: active ? t.accent : "transparent", color: active ? t.accentText : t.textMuted, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}
                       >
                         {l}
@@ -246,6 +251,7 @@ export default function QADrawer() {
                       <button
                         onClick={() => setPage(Math.max(1, safePage - 1))}
                         disabled={safePage === 1}
+                        data-testid="qa-prev-page"
                         style={{ padding: "4px 12px", fontSize: 12, fontWeight: 600, borderRadius: 6, border: `1px solid ${t.border}`, background: t.btnIdle, color: safePage === 1 ? t.textFaint : t.btnIdleTxt, cursor: safePage === 1 ? "not-allowed" : "pointer", fontFamily: "inherit" }}
                       >
                         ← Prev
@@ -256,6 +262,7 @@ export default function QADrawer() {
                       <button
                         onClick={() => setPage(Math.min(totalPages, safePage + 1))}
                         disabled={safePage === totalPages}
+                        data-testid="qa-next-page"
                         style={{ padding: "4px 12px", fontSize: 12, fontWeight: 600, borderRadius: 6, border: `1px solid ${t.border}`, background: t.btnIdle, color: safePage === totalPages ? t.textFaint : t.btnIdleTxt, cursor: safePage === totalPages ? "not-allowed" : "pointer", fontFamily: "inherit" }}
                       >
                         Next →

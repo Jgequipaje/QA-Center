@@ -37,6 +37,7 @@ export default function IssueCard({ issue, selected, onClick }: Props) {
   return (
     <button
       onClick={onClick}
+      data-testid={`issue-card-${issue.id}`}
       style={{
         width: "100%", textAlign: "left", padding: "10px 14px",
         background: selected ? t.infoBg : "transparent",
