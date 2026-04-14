@@ -10,20 +10,16 @@ jobs:
   prettier:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # ← ADD THIS - Allows pushing commits back
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }} # ← ADD THIS - Use GitHub's token
+          token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-node@v4
       - run: npm ci
-      - name: Check prettier
-        run: npx prettier --check .
-      - name: Auto-fix prettier (if check fails)
-        if: failure()
+      - name: Run prettier --write
         run: npx prettier --write .
-      - name: Commit and push prettier fixes
-        if: failure()
+      - name: Commit formatting changes
         uses: EndBug/add-and-commit@v9
         with:
           message: "chore: auto-format code with prettier"
