@@ -49,12 +49,23 @@ export function QACenter({
 
   // SSR guard — don't render on server (window/localStorage not available)
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   if (!mounted) return null;
 
   const content = (
     <QACenterConfigContext.Provider
-      value={{ baseUrl, buttonColor: resolvedColor, buttonSize, shape, logo, name, neko, nekoSpriteUrl }}
+      value={{
+        baseUrl,
+        buttonColor: resolvedColor,
+        buttonSize,
+        shape,
+        logo,
+        name,
+        neko,
+        nekoSpriteUrl,
+      }}
     >
       <QAFloatingButton />
       <QADrawer />

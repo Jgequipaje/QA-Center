@@ -28,7 +28,10 @@ statusRouter.get("/", async (req, res) => {
   try {
     const raw = await fs.readFile(issuesFile, "utf-8");
     issues = JSON.parse(raw);
-    if (!Array.isArray(issues)) { errors.push("qa-issues.json is not a valid array"); issues = []; }
+    if (!Array.isArray(issues)) {
+      errors.push("qa-issues.json is not a valid array");
+      issues = [];
+    }
     issuesFileStat = await fs.stat(issuesFile);
   } catch (e) {
     if (e.code !== "ENOENT") errors.push(`Failed to read qa-issues.json: ${e.message}`);
@@ -41,7 +44,10 @@ statusRouter.get("/", async (req, res) => {
   try {
     const raw = await fs.readFile(testsFile, "utf-8");
     tests = JSON.parse(raw);
-    if (!Array.isArray(tests)) { errors.push("qa-tests-cache.json is not a valid array"); tests = []; }
+    if (!Array.isArray(tests)) {
+      errors.push("qa-tests-cache.json is not a valid array");
+      tests = [];
+    }
     testsFileStat = await fs.stat(testsFile);
   } catch (e) {
     if (e.code !== "ENOENT") errors.push(`Failed to read qa-tests-cache.json: ${e.message}`);
@@ -52,7 +58,9 @@ statusRouter.get("/", async (req, res) => {
   try {
     await fs.stat(path.join(DIST, "index.html"));
     distBuilt = true;
-  } catch { /* not built */ }
+  } catch {
+    /* not built */
+  }
 
   // --- issue summary ---
   const byStatus = {};
@@ -80,9 +88,7 @@ statusRouter.get("/", async (req, res) => {
       file: testsFile,
       lastModified: testsFileStat?.mtime ?? null,
       total: tests.length,
-      note: tests.length === 0
-        ? "No tests cached yet. POST /api/qa-tests to scan."
-        : null,
+      note: tests.length === 0 ? "No tests cached yet. POST /api/qa-tests to scan." : null,
       data: tests,
     },
   });

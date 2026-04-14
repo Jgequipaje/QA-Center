@@ -5,17 +5,19 @@ export default function App() {
   const t = tokens[theme];
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: t.bg,
-      color: t.text,
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      fontFamily: "inherit",
-      gap: 12,
-    }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: t.bg,
+        color: t.text,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        fontFamily: "inherit",
+        gap: 12,
+      }}
+    >
       <div style={{ fontSize: 32 }}>🐾</div>
       <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: t.text }}>QA Center</h1>
       <p style={{ margin: 0, fontSize: 13, color: t.textMuted }}>

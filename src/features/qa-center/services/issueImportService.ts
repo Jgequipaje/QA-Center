@@ -16,6 +16,9 @@ export function parsedToIssue(parsed: ParsedMarkdownIssue, sourceFile?: string):
   };
 }
 
-export function importSelectedIssues(selected: ParsedMarkdownIssue[], sourceFile?: string): Issue[] {
+export function importSelectedIssues(
+  selected: ParsedMarkdownIssue[],
+  sourceFile?: string
+): Issue[] {
   return selected.map((p) => parsedToIssue(p, sourceFile));
 }

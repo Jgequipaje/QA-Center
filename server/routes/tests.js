@@ -20,7 +20,7 @@ function stableId(file, fullTitle) {
   const raw = `${file}::${fullTitle}`;
   let hash = 0;
   for (let i = 0; i < raw.length; i++) {
-    hash = ((hash << 5) - hash) + raw.charCodeAt(i);
+    hash = (hash << 5) - hash + raw.charCodeAt(i);
     hash |= 0;
   }
   return `test-${Math.abs(hash).toString(36)}`;
@@ -33,7 +33,10 @@ function extractTests(source, filePath) {
 
   for (const line of lines) {
     const describeMatch = line.match(/(?:test\.describe|describe)\s*\(\s*["'`](.+?)["'`]/);
-    if (describeMatch) { currentDescribe = describeMatch[1]; continue; }
+    if (describeMatch) {
+      currentDescribe = describeMatch[1];
+      continue;
+    }
 
     const testMatch = line.match(/^\s*(?:test|it)\s*(?:\.only|\.skip)?\s*\(\s*["'`](.+?)["'`]/);
     if (testMatch) {
@@ -54,12 +57,14 @@ async function scanDir(dir, depth = 0) {
       if (entry.isSymbolicLink()) continue;
       const full = path.join(dir, entry.name);
       if (entry.isDirectory() && entry.name !== "node_modules" && !entry.name.startsWith(".")) {
-        files.push(...await scanDir(full, depth + 1));
+        files.push(...(await scanDir(full, depth + 1)));
       } else if (entry.isFile() && TEST_FILE_PATTERN.test(entry.name)) {
         files.push(full);
       }
     }
-  } catch { /* dir doesn't exist — skip */ }
+  } catch {
+    /* dir doesn't exist — skip */
+  }
   return files;
 }
 
@@ -114,7 +119,9 @@ function startWatchers(cwd) {
           invalidate();
         }
       });
-    } catch { /* dir doesn't exist yet — skip */ }
+    } catch {
+      /* dir doesn't exist yet — skip */
+    }
   }
 }
 

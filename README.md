@@ -31,7 +31,7 @@ QA Center has two parts: a React component (UI) and an Express backend (persiste
 Drop `<QACenter />` anywhere in your React tree — it renders a floating button that doesn't affect your layout.
 
 ```tsx
-import { QACenter } from '@purr/qa-center'
+import { QACenter } from "@purr/qa-center";
 
 export default function App() {
   return (
@@ -39,7 +39,7 @@ export default function App() {
       <YourApp />
       <QACenter port={3333} />
     </>
-  )
+  );
 }
 ```
 
@@ -57,18 +57,18 @@ That's it. Click the floating button in the corner to open the drawer.
 
 ## Props
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `port` | `number` | `3333` | Port the Express backend is running on |
-| `apiBaseUrl` | `string` | — | Full base URL if not using localhost (overrides `port`) |
-| `name` | `string` | `"QA Center"` | Label shown in the drawer header |
-| `buttonColor` | `string \| { dark, light }` | `"#7c3aed"` | Floating button color, supports per-theme values |
-| `buttonSize` | `number` | `52` | Button diameter in px |
-| `shape` | `"circle" \| "rounded" \| "square"` | `"circle"` | Button shape |
-| `logo` | `ReactNode` | — | Custom icon inside the button |
-| `ownTheme` | `boolean` | `true` | Set to `false` if your app already has a ThemeProvider |
-| `neko` | `boolean` | `false` | Show an animated cat on the button |
-| `nekoSpriteUrl` | `string` | — | Custom sprite URL for the neko cat |
+| Prop            | Type                                | Default       | Description                                             |
+| --------------- | ----------------------------------- | ------------- | ------------------------------------------------------- |
+| `port`          | `number`                            | `3333`        | Port the Express backend is running on                  |
+| `apiBaseUrl`    | `string`                            | —             | Full base URL if not using localhost (overrides `port`) |
+| `name`          | `string`                            | `"QA Center"` | Label shown in the drawer header                        |
+| `buttonColor`   | `string \| { dark, light }`         | `"#7c3aed"`   | Floating button color, supports per-theme values        |
+| `buttonSize`    | `number`                            | `52`          | Button diameter in px                                   |
+| `shape`         | `"circle" \| "rounded" \| "square"` | `"circle"`    | Button shape                                            |
+| `logo`          | `ReactNode`                         | —             | Custom icon inside the button                           |
+| `ownTheme`      | `boolean`                           | `true`        | Set to `false` if your app already has a ThemeProvider  |
+| `neko`          | `boolean`                           | `false`       | Show an animated cat on the button                      |
+| `nekoSpriteUrl` | `string`                            | —             | Custom sprite URL for the neko cat                      |
 
 ---
 
@@ -84,6 +84,7 @@ npx qa-center --data-dir ./qa-data      # store qa-issues.json outside Vite's wa
 Issues are saved to `qa-issues.json` in the directory where you run the command (or `--data-dir` if specified). The file is git-friendly — commit it to share issue state with your team, or add it to `.gitignore` to keep it local.
 
 > **React Router v7 / Vite HMR tip:** If updating an issue status causes a full page reload, it's because Vite is watching `qa-issues.json`. Fix it by storing the data file outside your project:
+>
 > ```bash
 > npx qa-center --data-dir ../qa-data
 > ```
@@ -108,26 +109,26 @@ All endpoints are served by the Express backend on `http://localhost:<port>`.
 
 ### Issues
 
-| Method | Route | Description |
-|---|---|---|
-| `GET` | `/api/qa-issues` | Return all issues, sorted newest first |
-| `POST` | `/api/qa-issues` | Create a new issue |
-| `PATCH` | `/api/qa-issues/:id` | Update issue fields or status |
-| `DELETE` | `/api/qa-issues/:id` | Delete an issue |
-| `POST` | `/api/qa-issues/:id/run-test` | Run the linked Playwright test |
+| Method   | Route                         | Description                            |
+| -------- | ----------------------------- | -------------------------------------- |
+| `GET`    | `/api/qa-issues`              | Return all issues, sorted newest first |
+| `POST`   | `/api/qa-issues`              | Create a new issue                     |
+| `PATCH`  | `/api/qa-issues/:id`          | Update issue fields or status          |
+| `DELETE` | `/api/qa-issues/:id`          | Delete an issue                        |
+| `POST`   | `/api/qa-issues/:id/run-test` | Run the linked Playwright test         |
 
 ### Tests
 
-| Method | Route | Description |
-|---|---|---|
-| `GET` | `/api/qa-tests` | Return cached Playwright test list |
-| `POST` | `/api/qa-tests` | Force rescan of test directories |
+| Method | Route           | Description                        |
+| ------ | --------------- | ---------------------------------- |
+| `GET`  | `/api/qa-tests` | Return cached Playwright test list |
+| `POST` | `/api/qa-tests` | Force rescan of test directories   |
 
 ### Status
 
-| Method | Route | Description |
-|---|---|---|
-| `GET` | `/api/status` | Server health, issue summary, test cache info |
+| Method | Route         | Description                                   |
+| ------ | ------------- | --------------------------------------------- |
+| `GET`  | `/api/status` | Server health, issue summary, test cache info |
 
 #### POST /api/qa-issues — body
 
@@ -160,8 +161,6 @@ Valid `status` values: `open` `in_progress` `ready_for_qa` `verified` `closed`
 Valid `severity` values: `critical` `high` `medium` `low` `info`
 
 Valid `origin` values: `manual` `feature` `note` `imported_markdown`
-
-
 
 ```bash
 git clone https://github.com/Jgequipaje/qa-center

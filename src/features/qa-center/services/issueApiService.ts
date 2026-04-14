@@ -6,7 +6,10 @@ export async function fetchIssues(baseUrl: string): Promise<Issue[]> {
   return res.json();
 }
 
-export async function createIssue(baseUrl: string, issue: Omit<Issue, "id" | "createdAt" | "updatedAt">): Promise<Issue> {
+export async function createIssue(
+  baseUrl: string,
+  issue: Omit<Issue, "id" | "createdAt" | "updatedAt">
+): Promise<Issue> {
   const res = await fetch(`${baseUrl}/api/qa-issues`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -19,7 +22,11 @@ export async function createIssue(baseUrl: string, issue: Omit<Issue, "id" | "cr
   return res.json();
 }
 
-export async function patchIssue(baseUrl: string, id: string, patch: Partial<Omit<Issue, "id" | "createdAt">>): Promise<Issue> {
+export async function patchIssue(
+  baseUrl: string,
+  id: string,
+  patch: Partial<Omit<Issue, "id" | "createdAt">>
+): Promise<Issue> {
   const res = await fetch(`${baseUrl}/api/qa-issues/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -29,7 +36,11 @@ export async function patchIssue(baseUrl: string, id: string, patch: Partial<Omi
   return res.json();
 }
 
-export async function updateIssueStatus(baseUrl: string, id: string, status: IssueStatus): Promise<Issue> {
+export async function updateIssueStatus(
+  baseUrl: string,
+  id: string,
+  status: IssueStatus
+): Promise<Issue> {
   const res = await fetch(`${baseUrl}/api/qa-issues/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },

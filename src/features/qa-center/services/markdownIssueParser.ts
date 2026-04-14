@@ -15,8 +15,10 @@ export type ParseResult = {
 
 const STATUS_MAP: Record<string, IssueStatus> = {
   open: "open",
-  "in progress": "in_progress", in_progress: "in_progress",
-  "ready for qa": "ready_for_qa", ready_for_qa: "ready_for_qa",
+  "in progress": "in_progress",
+  in_progress: "in_progress",
+  "ready for qa": "ready_for_qa",
+  ready_for_qa: "ready_for_qa",
   verified: "verified",
   closed: "closed",
 };
@@ -34,7 +36,8 @@ export function parseMarkdownIssues(markdown: string): ParseResult {
   if (sections.length === 0) {
     return {
       issues: [],
-      parseError: "No sections found. Each issue should start with a ## heading (e.g. ## ISSUE-001).",
+      parseError:
+        "No sections found. Each issue should start with a ## heading (e.g. ## ISSUE-001).",
     };
   }
 
@@ -57,8 +60,11 @@ export function parseMarkdownIssues(markdown: string): ParseResult {
     let status: IssueStatus = "open";
     if (rawStatus) {
       const mapped = STATUS_MAP[rawStatus.toLowerCase()];
-      if (mapped) { status = mapped; }
-      else { warnings.push(`Unknown status "${rawStatus}" — defaulted to "open".`); }
+      if (mapped) {
+        status = mapped;
+      } else {
+        warnings.push(`Unknown status "${rawStatus}" — defaulted to "open".`);
+      }
     } else {
       warnings.push('No Status field found — defaulted to "open".');
     }

@@ -1,146 +1,480 @@
 <!doctype html>
 <html lang="en" data-theme="dark">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>QA Center &#x2014; Documentation - Beta Release</title>
-  <meta name="description" content="A draggable floating panel for logging bugs, features, and notes — without leaving the browser. Zero database, zero config. Issues save to a JSON file.">
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐈</text></svg>">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #09090b; --bg-subtle: #111113; --bg-muted: #18181b;
-      --border: #27272a; --text: #fafafa; --text-muted: #a1a1aa;
-      --text-faint: #52525b; --accent: #7c3aed; --accent-text: #ffffff;
-      --link: #a78bfa; --code-bg: #18181b; --code-border: #27272a;
-    }
-    [data-theme="light"] {
-      --bg: #ffffff; --bg-subtle: #fafafa; --bg-muted: #f4f4f5;
-      --border: #e4e4e7; --text: #09090b; --text-muted: #71717a;
-      --text-faint: #a1a1aa; --accent: #7c3aed; --accent-text: #ffffff;
-      --link: #7c3aed; --code-bg: #f4f4f5; --code-border: #e4e4e7;
-    }
-    html { background: var(--bg); color: var(--text); scroll-behavior: smooth; }
-    body { font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 1.7; }
-    nav {
-      position: sticky; top: 0; z-index: 100;
-      background: var(--bg-subtle); border-bottom: 1px solid var(--border);
-      padding: 0 24px; height: 52px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .nav-logo { font-weight: 700; font-size: 15px; color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 8px; }
-    .nav-logo span { background: var(--accent); color: var(--accent-text); border-radius: 6px; padding: 2px 8px; font-size: 12px; }
-    .nav-links { display: flex; gap: 4px; align-items: center; }
-    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 12px; padding: 5px 10px; border-radius: 6px; transition: color 0.15s, background 0.15s; }
-    .nav-links a:hover { color: var(--text); background: var(--bg-muted); }
-    #theme-toggle { background: none; border: 1px solid var(--border); color: var(--text-muted); border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer; font-family: inherit; }
-    #theme-toggle:hover { color: var(--text); border-color: var(--text-muted); }
-    .page { max-width: 860px; margin: 0 auto; padding: 0 24px 80px; }
-    .hero { padding: 72px 0 56px; text-align: center; }
-    .hero h1 { font-size: clamp(28px, 5vw, 48px); font-weight: 700; line-height: 1.2; margin-bottom: 16px; }
-    .hero h1 em { font-style: normal; color: var(--accent); }
-    .hero p { font-size: 15px; color: var(--text-muted); max-width: 520px; margin: 0 auto 32px; }
-    .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-    .btn { display: inline-block; padding: 9px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; font-family: inherit; cursor: pointer; border: none; transition: opacity 0.15s; }
-    .btn:hover { opacity: 0.85; }
-    .btn-primary { background: var(--accent); color: var(--accent-text); }
-    .btn-outline { background: none; border: 1px solid var(--border); color: var(--text); }
-    .badge-beta { display: inline-block; background: var(--bg-muted); border: 1px solid var(--border); color: var(--text-muted); font-size: 11px; padding: 2px 8px; border-radius: 99px; margin-bottom: 20px; }
-    section { padding: 56px 0; border-top: 1px solid var(--border); }
-    .section-label { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
-    h2 { font-size: 22px; font-weight: 700; margin-bottom: 12px; }
-    h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
-    p { color: var(--text-muted); margin-bottom: 16px; }
-    p:last-child { margin-bottom: 0; }
-    pre { background: var(--code-bg); border: 1px solid var(--code-border); border-radius: 8px; padding: 16px 20px; overflow-x: auto; font-size: 13px; line-height: 1.6; margin: 16px 0; position: relative; }
-    code { font-family: 'JetBrains Mono', monospace; }
-    .inline-code { background: var(--code-bg); border: 1px solid var(--code-border); border-radius: 4px; padding: 1px 6px; font-size: 12px; color: var(--link); }
-    .copy-btn { position: absolute; top: 10px; right: 10px; background: var(--bg-muted); border: 1px solid var(--border); color: var(--text-muted); border-radius: 5px; padding: 3px 9px; font-size: 11px; cursor: pointer; font-family: inherit; }
-    .copy-btn:hover { color: var(--text); }
-    .steps { display: flex; flex-direction: column; gap: 24px; margin-top: 24px; }
-    .step { display: flex; gap: 16px; }
-    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: var(--accent-text); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
-    .step-body h3 { margin-bottom: 6px; }
-    .feature-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; margin-top: 24px; }
-    .feature-card { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; }
-    .feature-icon { font-size: 22px; margin-bottom: 10px; }
-    .feature-card h3 { font-size: 13px; margin-bottom: 6px; }
-    .feature-card p { font-size: 12px; margin: 0; }
-    .feature-card a { color: var(--link); }
-    .table-wrap { overflow-x: auto; margin-top: 20px; }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    th { text-align: left; padding: 8px 12px; color: var(--text-faint); font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
-    td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text-muted); vertical-align: top; }
-    td:first-child { color: var(--link); white-space: nowrap; }
-    td:nth-child(2) { color: var(--text-faint); white-space: nowrap; }
-    tr:last-child td { border-bottom: none; }
-    .pill { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; }
-    .pill-open { background: #1a2e1a; color: #4ade80; border: 1px solid #166534; }
-    .pill-progress { background: #1e1a2e; color: #a78bfa; border: 1px solid #4c1d95; }
-    .pill-qa { background: #1a1e2e; color: #60a5fa; border: 1px solid #1e3a5f; }
-    .pill-verified { background: #1a2e2e; color: #34d399; border: 1px solid #065f46; }
-    .pill-closed { background: var(--bg-muted); color: var(--text-faint); border: 1px solid var(--border); }
-    .workflow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 20px 0; }
-    .workflow-arrow { color: var(--text-faint); font-size: 12px; }
-    .callout { background: #1e1030; border: 1px solid #4c1d95; border-radius: 8px; padding: 14px 18px; margin: 20px 0; font-size: 13px; color: #a78bfa; }
-    [data-theme="light"] .callout { background: #ede9fe; border-color: #c4b5fd; color: #6d28d9; }
-    footer { border-top: 1px solid var(--border); padding: 32px 24px; text-align: center; font-size: 12px; color: var(--text-faint); line-height: 2; }
-    footer a { color: var(--link); text-decoration: none; }
-    footer a:hover { text-decoration: underline; }
-  </style>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QA Center &#x2014; Documentation - Beta Release</title>
+    <meta
+      name="description"
+      content="A draggable floating panel for logging bugs, features, and notes — without leaving the browser. Zero database, zero config. Issues save to a JSON file."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐈</text></svg>"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      :root {
+        --bg: #09090b;
+        --bg-subtle: #111113;
+        --bg-muted: #18181b;
+        --border: #27272a;
+        --text: #fafafa;
+        --text-muted: #a1a1aa;
+        --text-faint: #52525b;
+        --accent: #7c3aed;
+        --accent-text: #ffffff;
+        --link: #a78bfa;
+        --code-bg: #18181b;
+        --code-border: #27272a;
+      }
+      [data-theme="light"] {
+        --bg: #ffffff;
+        --bg-subtle: #fafafa;
+        --bg-muted: #f4f4f5;
+        --border: #e4e4e7;
+        --text: #09090b;
+        --text-muted: #71717a;
+        --text-faint: #a1a1aa;
+        --accent: #7c3aed;
+        --accent-text: #ffffff;
+        --link: #7c3aed;
+        --code-bg: #f4f4f5;
+        --code-border: #e4e4e7;
+      }
+      html {
+        background: var(--bg);
+        color: var(--text);
+        scroll-behavior: smooth;
+      }
+      body {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 14px;
+        line-height: 1.7;
+      }
+      nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: var(--bg-subtle);
+        border-bottom: 1px solid var(--border);
+        padding: 0 24px;
+        height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .nav-logo {
+        font-weight: 700;
+        font-size: 15px;
+        color: var(--text);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .nav-logo span {
+        background: var(--accent);
+        color: var(--accent-text);
+        border-radius: 6px;
+        padding: 2px 8px;
+        font-size: 12px;
+      }
+      .nav-links {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+      }
+      .nav-links a {
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 12px;
+        padding: 5px 10px;
+        border-radius: 6px;
+        transition:
+          color 0.15s,
+          background 0.15s;
+      }
+      .nav-links a:hover {
+        color: var(--text);
+        background: var(--bg-muted);
+      }
+      #theme-toggle {
+        background: none;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        border-radius: 6px;
+        padding: 4px 10px;
+        font-size: 12px;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      #theme-toggle:hover {
+        color: var(--text);
+        border-color: var(--text-muted);
+      }
+      .page {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 0 24px 80px;
+      }
+      .hero {
+        padding: 72px 0 56px;
+        text-align: center;
+      }
+      .hero h1 {
+        font-size: clamp(28px, 5vw, 48px);
+        font-weight: 700;
+        line-height: 1.2;
+        margin-bottom: 16px;
+      }
+      .hero h1 em {
+        font-style: normal;
+        color: var(--accent);
+      }
+      .hero p {
+        font-size: 15px;
+        color: var(--text-muted);
+        max-width: 520px;
+        margin: 0 auto 32px;
+      }
+      .hero-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .btn {
+        display: inline-block;
+        padding: 9px 20px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        font-family: inherit;
+        cursor: pointer;
+        border: none;
+        transition: opacity 0.15s;
+      }
+      .btn:hover {
+        opacity: 0.85;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: var(--accent-text);
+      }
+      .btn-outline {
+        background: none;
+        border: 1px solid var(--border);
+        color: var(--text);
+      }
+      .badge-beta {
+        display: inline-block;
+        background: var(--bg-muted);
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 99px;
+        margin-bottom: 20px;
+      }
+      section {
+        padding: 56px 0;
+        border-top: 1px solid var(--border);
+      }
+      .section-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 10px;
+      }
+      h2 {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 12px;
+      }
+      h3 {
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: var(--text);
+      }
+      p {
+        color: var(--text-muted);
+        margin-bottom: 16px;
+      }
+      p:last-child {
+        margin-bottom: 0;
+      }
+      pre {
+        background: var(--code-bg);
+        border: 1px solid var(--code-border);
+        border-radius: 8px;
+        padding: 16px 20px;
+        overflow-x: auto;
+        font-size: 13px;
+        line-height: 1.6;
+        margin: 16px 0;
+        position: relative;
+      }
+      code {
+        font-family: "JetBrains Mono", monospace;
+      }
+      .inline-code {
+        background: var(--code-bg);
+        border: 1px solid var(--code-border);
+        border-radius: 4px;
+        padding: 1px 6px;
+        font-size: 12px;
+        color: var(--link);
+      }
+      .copy-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: var(--bg-muted);
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        border-radius: 5px;
+        padding: 3px 9px;
+        font-size: 11px;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .copy-btn:hover {
+        color: var(--text);
+      }
+      .steps {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        margin-top: 24px;
+      }
+      .step {
+        display: flex;
+        gap: 16px;
+      }
+      .step-num {
+        flex-shrink: 0;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--accent);
+        color: var(--accent-text);
+        font-size: 12px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 2px;
+      }
+      .step-body h3 {
+        margin-bottom: 6px;
+      }
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 16px;
+        margin-top: 24px;
+      }
+      .feature-card {
+        background: var(--bg-subtle);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 18px 20px;
+      }
+      .feature-icon {
+        font-size: 22px;
+        margin-bottom: 10px;
+      }
+      .feature-card h3 {
+        font-size: 13px;
+        margin-bottom: 6px;
+      }
+      .feature-card p {
+        font-size: 12px;
+        margin: 0;
+      }
+      .feature-card a {
+        color: var(--link);
+      }
+      .table-wrap {
+        overflow-x: auto;
+        margin-top: 20px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      th {
+        text-align: left;
+        padding: 8px 12px;
+        color: var(--text-faint);
+        font-weight: 600;
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+      }
+      td {
+        padding: 9px 12px;
+        border-bottom: 1px solid var(--border);
+        color: var(--text-muted);
+        vertical-align: top;
+      }
+      td:first-child {
+        color: var(--link);
+        white-space: nowrap;
+      }
+      td:nth-child(2) {
+        color: var(--text-faint);
+        white-space: nowrap;
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      .pill {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .pill-open {
+        background: #1a2e1a;
+        color: #4ade80;
+        border: 1px solid #166534;
+      }
+      .pill-progress {
+        background: #1e1a2e;
+        color: #a78bfa;
+        border: 1px solid #4c1d95;
+      }
+      .pill-qa {
+        background: #1a1e2e;
+        color: #60a5fa;
+        border: 1px solid #1e3a5f;
+      }
+      .pill-verified {
+        background: #1a2e2e;
+        color: #34d399;
+        border: 1px solid #065f46;
+      }
+      .pill-closed {
+        background: var(--bg-muted);
+        color: var(--text-faint);
+        border: 1px solid var(--border);
+      }
+      .workflow {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin: 20px 0;
+      }
+      .workflow-arrow {
+        color: var(--text-faint);
+        font-size: 12px;
+      }
+      .callout {
+        background: #1e1030;
+        border: 1px solid #4c1d95;
+        border-radius: 8px;
+        padding: 14px 18px;
+        margin: 20px 0;
+        font-size: 13px;
+        color: #a78bfa;
+      }
+      [data-theme="light"] .callout {
+        background: #ede9fe;
+        border-color: #c4b5fd;
+        color: #6d28d9;
+      }
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 32px 24px;
+        text-align: center;
+        font-size: 12px;
+        color: var(--text-faint);
+        line-height: 2;
+      }
+      footer a {
+        color: var(--link);
+        text-decoration: none;
+      }
+      footer a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <a class="nav-logo" href="#"><span>QA Center</span></a>
+      <div class="nav-links">
+        <a href="#install">Install</a>
+        <a href="#usage">Usage</a>
+        <a href="#features">Features</a>
+        <a href="#props">Props</a>
+        <a href="#workflow">Workflow</a>
+        <a href="#cli">CLI</a>
+        <button id="theme-toggle">&#x2600; Light</button>
+      </div>
+    </nav>
 
-<nav>
-  <a class="nav-logo" href="#"><span>QA Center</span></a>
-  <div class="nav-links">
-    <a href="#install">Install</a>
-    <a href="#usage">Usage</a>
-    <a href="#features">Features</a>
-    <a href="#props">Props</a>
-    <a href="#workflow">Workflow</a>
-    <a href="#cli">CLI</a>
-    <button id="theme-toggle">&#x2600; Light</button>
-  </div>
-</nav>
-
-<div class="page">
-
-  <!-- HERO -->
-  <div class="hero">
-    <div class="badge-beta">v0.1.0-beta &middot; open beta</div>
-    <h1>QA tracking that lives<br/><em>inside your app</em></h1>
-    <p>A draggable floating panel for logging bugs, features, and notes &#x2014; without leaving the browser. Zero database, zero config. Issues save to a JSON file.</p>
-    <div class="hero-actions">
-      <a class="btn btn-primary" href="#install">Get started</a>
-      <a class="btn btn-outline" href="https://github.com/Jgequipaje/qa-center" target="_blank">GitHub &#x2192;</a>
-    </div>
-  </div>
-
-  <!-- INSTALL -->
-  <section id="install">
-    <div class="section-label">Installation</div>
-    <h2>Get it in two minutes</h2>
-    <p>Install directly from GitHub &#x2014; no npm publish required during beta.</p>
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-body">
-          <h3>Install the package</h3>
-          <!-- <pre><code>npm install github:Jgequipaje/qa-center</code><button class="copy-btn" onclick="copy(this)">copy</button></pre> -->
-          <p>Pin to a specific release tag:</p>
-          <pre><code>npm install github:Jgequipaje/qa-center#v0.1.0-beta</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
+    <div class="page">
+      <!-- HERO -->
+      <div class="hero">
+        <div class="badge-beta">v0.1.0-beta &middot; open beta</div>
+        <h1>QA tracking that lives<br /><em>inside your app</em></h1>
+        <p>
+          A draggable floating panel for logging bugs, features, and notes &#x2014; without leaving
+          the browser. Zero database, zero config. Issues save to a JSON file.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#install">Get started</a>
+          <a class="btn btn-outline" href="https://github.com/Jgequipaje/qa-center" target="_blank"
+            >GitHub &#x2192;</a
+          >
         </div>
       </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-body">
-          <h3>Add the component</h3>
-          <p>Drop <span class="inline-code">&lt;QACenter /&gt;</span> anywhere in your React tree. It renders a floating button that won't affect your layout.</p>
-          <pre><code>import { QACenter } from '@purr/qa-center'
+
+      <!-- INSTALL -->
+      <section id="install">
+        <div class="section-label">Installation</div>
+        <h2>Get it in two minutes</h2>
+        <p>Install directly from GitHub &#x2014; no npm publish required during beta.</p>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <h3>Install the package</h3>
+              <!-- <pre><code>npm install github:Jgequipaje/qa-center</code><button class="copy-btn" onclick="copy(this)">copy</button></pre> -->
+              <p>Pin to a specific release tag:</p>
+              <pre><code>npm install github:Jgequipaje/qa-center#v0.1.0-beta</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <h3>Add the component</h3>
+              <p>
+                Drop <span class="inline-code">&lt;QACenter /&gt;</span> anywhere in your React
+                tree. It renders a floating button that won't affect your layout.
+              </p>
+              <pre><code>import { QACenter } from '@purr/qa-center'
 
 export default function App() {
   return (
@@ -150,149 +484,241 @@ export default function App() {
     &lt;/&gt;
   )
 }</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <h3>Start the backend</h3>
+              <p>
+                The Express server handles reads and writes to
+                <span class="inline-code">qa-issues.json</span>. Run it in a separate terminal.
+              </p>
+              <pre><code>npx qa-center --port 3333</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
+              <p>
+                That's it. Click the floating button in the corner of your app to open the drawer.
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-body">
-          <h3>Start the backend</h3>
-          <p>The Express server handles reads and writes to <span class="inline-code">qa-issues.json</span>. Run it in a separate terminal.</p>
-          <pre><code>npx qa-center --port 3333</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
-          <p>That's it. Click the floating button in the corner of your app to open the drawer.</p>
+        <div class="callout">
+          &#x1F4A1; Requires React 19 as a peer dependency. The backend and frontend must use the
+          same port &#x2014; use the <span class="inline-code">port</span> prop to keep them in
+          sync.
         </div>
-      </div>
-    </div>
-    <div class="callout">
-      &#x1F4A1; Requires React 19 as a peer dependency. The backend and frontend must use the same port &#x2014; use the <span class="inline-code">port</span> prop to keep them in sync.
-    </div>
-  </section>
+      </section>
 
-  <!-- USAGE -->
-  <section id="usage">
-    <div class="section-label">Usage</div>
-    <h2>Local dev workflow</h2>
-    <p>QA Center runs alongside your existing dev server. Two terminals, that's all.</p>
-    <pre><code># Terminal 1 — your app (as usual)
+      <!-- USAGE -->
+      <section id="usage">
+        <div class="section-label">Usage</div>
+        <h2>Local dev workflow</h2>
+        <p>QA Center runs alongside your existing dev server. Two terminals, that's all.</p>
+        <pre><code># Terminal 1 — your app (as usual)
 npm run dev
 
 # Terminal 2 — QA Center backend
 npx qa-center --port 3333</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
-    <p>Issues are saved to <span class="inline-code">qa-issues.json</span> in the directory where you run the command. Human-readable and git-friendly.</p>
-    <h3 style="margin-top:28px">Share with your team</h3>
-    <p>Commit <span class="inline-code">qa-issues.json</span> to share issue state, or add it to <span class="inline-code">.gitignore</span> to keep it personal.</p>
-    <pre><code># Share issues via git
+        <p>
+          Issues are saved to <span class="inline-code">qa-issues.json</span> in the directory where
+          you run the command. Human-readable and git-friendly.
+        </p>
+        <h3 style="margin-top: 28px">Share with your team</h3>
+        <p>
+          Commit <span class="inline-code">qa-issues.json</span> to share issue state, or add it to
+          <span class="inline-code">.gitignore</span> to keep it personal.
+        </p>
+        <pre><code># Share issues via git
 git add qa-issues.json
 git commit -m "chore: update qa issues"
 
 # Or keep it local
 echo "qa-issues.json" >> .gitignore</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
-  </section>
+      </section>
 
-  <!-- FEATURES -->
-  <section id="features">
-    <div class="section-label">Features</div>
-    <h2>Everything you need, nothing you don't</h2>
-    <p>Built for QA engineers and developers who want a lightweight tracker that lives in the browser.</p>
-    <div class="feature-grid">
-      <div class="feature-card">
-        <div class="feature-icon">&#x1F41B;</div>
-        <h3>Issue Tracking</h3>
-        <p>Log bugs with title, description, severity, area, repro steps, expected vs actual, and notes.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">&#x2728;</div>
-        <h3>Feature Requests</h3>
-        <p>Track feature ideas and enhancements separately from bugs in their own tab.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">&#x1F4DD;</div>
-        <h3>Notes</h3>
-        <p>Capture QA notes, checklists, and observations that don't fit as issues.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">&#x1F50D;</div>
-        <h3>Search &amp; Filter</h3>
-        <p>Live search across title, area, and description. Filter by status and severity.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">&#x1F3AD;</div>
-        <h3>Playwright Linking</h3>
-        <p>Link a Playwright test to any issue. Run it directly from the detail panel and see pass/fail.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">&#x1F4D1;</div>
-        <h3>Pagination</h3>
-        <p>Issue lists paginate at 10 per page so large backlogs stay manageable.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">&#x1F317;</div>
-        <h3>Dark / Light Theme</h3>
-        <p>Toggle between dark and light mode. Preference is persisted to localStorage.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">&#x1F5B1;&#xFE0F;</div>
-        <h3>Draggable Button</h3>
-        <p>The floating button snaps to the left or right edge. Position saved per browser.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">&#x1F431;</div>
-        <h3>Neko Cat</h3>
-        <p>An animated cat sits on the floating button. Enable with the <span class="inline-code">neko</span> prop. Sprite based on <a href="https://github.com/adryd325/oneko.js" target="_blank">oneko.js</a> by adryd325, originally from Neko (1989) by Naoshi Watanabe.</p>
-      </div>
-    </div>
-  </section>
+      <!-- FEATURES -->
+      <section id="features">
+        <div class="section-label">Features</div>
+        <h2>Everything you need, nothing you don't</h2>
+        <p>
+          Built for QA engineers and developers who want a lightweight tracker that lives in the
+          browser.
+        </p>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-icon">&#x1F41B;</div>
+            <h3>Issue Tracking</h3>
+            <p>
+              Log bugs with title, description, severity, area, repro steps, expected vs actual, and
+              notes.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">&#x2728;</div>
+            <h3>Feature Requests</h3>
+            <p>Track feature ideas and enhancements separately from bugs in their own tab.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">&#x1F4DD;</div>
+            <h3>Notes</h3>
+            <p>Capture QA notes, checklists, and observations that don't fit as issues.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">&#x1F50D;</div>
+            <h3>Search &amp; Filter</h3>
+            <p>Live search across title, area, and description. Filter by status and severity.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">&#x1F3AD;</div>
+            <h3>Playwright Linking</h3>
+            <p>
+              Link a Playwright test to any issue. Run it directly from the detail panel and see
+              pass/fail.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">&#x1F4D1;</div>
+            <h3>Pagination</h3>
+            <p>Issue lists paginate at 10 per page so large backlogs stay manageable.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">&#x1F317;</div>
+            <h3>Dark / Light Theme</h3>
+            <p>Toggle between dark and light mode. Preference is persisted to localStorage.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">&#x1F5B1;&#xFE0F;</div>
+            <h3>Draggable Button</h3>
+            <p>The floating button snaps to the left or right edge. Position saved per browser.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">&#x1F431;</div>
+            <h3>Neko Cat</h3>
+            <p>
+              An animated cat sits on the floating button. Enable with the
+              <span class="inline-code">neko</span> prop. Sprite based on
+              <a href="https://github.com/adryd325/oneko.js" target="_blank">oneko.js</a> by
+              adryd325, originally from Neko (1989) by Naoshi Watanabe.
+            </p>
+          </div>
+        </div>
+      </section>
 
-  <!-- WORKFLOW -->
-  <section id="workflow">
-    <div class="section-label">Status Workflow</div>
-    <h2>Issue lifecycle</h2>
-    <p>Issues follow a structured workflow with valid transitions enforced in the UI.</p>
-    <div class="workflow">
-      <span class="pill pill-open">open</span>
-      <span class="workflow-arrow">&#x2192;</span>
-      <span class="pill pill-progress">in progress</span>
-      <span class="workflow-arrow">&#x2192;</span>
-      <span class="pill pill-qa">ready for QA</span>
-      <span class="workflow-arrow">&#x2192;</span>
-      <span class="pill pill-verified">verified</span>
-      <span class="workflow-arrow">&#x2192;</span>
-      <span class="pill pill-closed">closed</span>
-    </div>
-    <p>Closed issues can always be re-opened back to <span class="inline-code">open</span>.</p>
-    <div class="callout">
-      Verification gating &#x2014; an issue cannot be marked <strong>verified</strong> unless its linked Playwright test exists and has passed.
-    </div>
-    <h3 style="margin-top:28px">Features &amp; Notes</h3>
-    <p>Features use a simplified workflow: <span class="inline-code">open &#x2192; in progress &#x2192; verified (done) &#x2192; closed</span>.</p>
-    <p>Notes use: <span class="inline-code">open &#x2192; closed (archived)</span>.</p>
-  </section>
+      <!-- WORKFLOW -->
+      <section id="workflow">
+        <div class="section-label">Status Workflow</div>
+        <h2>Issue lifecycle</h2>
+        <p>Issues follow a structured workflow with valid transitions enforced in the UI.</p>
+        <div class="workflow">
+          <span class="pill pill-open">open</span>
+          <span class="workflow-arrow">&#x2192;</span>
+          <span class="pill pill-progress">in progress</span>
+          <span class="workflow-arrow">&#x2192;</span>
+          <span class="pill pill-qa">ready for QA</span>
+          <span class="workflow-arrow">&#x2192;</span>
+          <span class="pill pill-verified">verified</span>
+          <span class="workflow-arrow">&#x2192;</span>
+          <span class="pill pill-closed">closed</span>
+        </div>
+        <p>Closed issues can always be re-opened back to <span class="inline-code">open</span>.</p>
+        <div class="callout">
+          Verification gating &#x2014; an issue cannot be marked <strong>verified</strong> unless
+          its linked Playwright test exists and has passed.
+        </div>
+        <h3 style="margin-top: 28px">Features &amp; Notes</h3>
+        <p>
+          Features use a simplified workflow:
+          <span class="inline-code"
+            >open &#x2192; in progress &#x2192; verified (done) &#x2192; closed</span
+          >.
+        </p>
+        <p>Notes use: <span class="inline-code">open &#x2192; closed (archived)</span>.</p>
+      </section>
 
-  <!-- PROPS -->
-  <section id="props">
-    <div class="section-label">API Reference</div>
-    <h2>Component props</h2>
-    <p>All props are optional. The component works out of the box with just <span class="inline-code">&lt;QACenter /&gt;</span>.</p>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>Prop</th><th>Type</th><th>Default</th><th>Description</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>port</td><td>number</td><td>3333</td><td>Port the Express backend is running on</td></tr>
-          <tr><td>apiBaseUrl</td><td>string</td><td>&#x2014;</td><td>Full base URL if not using localhost &#x2014; overrides <span class="inline-code">port</span></td></tr>
-          <tr><td>name</td><td>string</td><td>"QA Center"</td><td>Label shown in the drawer header</td></tr>
-          <tr><td>buttonColor</td><td>string | { dark, light }</td><td>#7c3aed</td><td>Floating button color. Pass an object for per-theme values</td></tr>
-          <tr><td>buttonSize</td><td>number</td><td>52</td><td>Button diameter in px</td></tr>
-          <tr><td>shape</td><td>"circle" | "rounded" | "square"</td><td>"circle"</td><td>Shape of the floating button</td></tr>
-          <tr><td>logo</td><td>ReactNode</td><td>&#x2014;</td><td>Custom icon rendered inside the button</td></tr>
-          <tr><td>ownTheme</td><td>boolean</td><td>true</td><td>Set to <span class="inline-code">false</span> if your app already has a ThemeProvider</td></tr>
-          <tr><td>neko</td><td>boolean</td><td>false</td><td>Show an animated cat sitting on the button</td></tr>
-          <!-- <tr><td>nekoSpriteUrl</td><td>string</td><td>&#x2014;</td><td>Custom sprite URL for the neko cat animation</td></tr> -->
-        </tbody>
-      </table>
-    </div>
-    <h3 style="margin-top:32px">Examples</h3>
-    <pre><code>// Custom color per theme
+      <!-- PROPS -->
+      <section id="props">
+        <div class="section-label">API Reference</div>
+        <h2>Component props</h2>
+        <p>
+          All props are optional. The component works out of the box with just
+          <span class="inline-code">&lt;QACenter /&gt;</span>.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Prop</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>port</td>
+                <td>number</td>
+                <td>3333</td>
+                <td>Port the Express backend is running on</td>
+              </tr>
+              <tr>
+                <td>apiBaseUrl</td>
+                <td>string</td>
+                <td>&#x2014;</td>
+                <td>
+                  Full base URL if not using localhost &#x2014; overrides
+                  <span class="inline-code">port</span>
+                </td>
+              </tr>
+              <tr>
+                <td>name</td>
+                <td>string</td>
+                <td>"QA Center"</td>
+                <td>Label shown in the drawer header</td>
+              </tr>
+              <tr>
+                <td>buttonColor</td>
+                <td>string | { dark, light }</td>
+                <td>#7c3aed</td>
+                <td>Floating button color. Pass an object for per-theme values</td>
+              </tr>
+              <tr>
+                <td>buttonSize</td>
+                <td>number</td>
+                <td>52</td>
+                <td>Button diameter in px</td>
+              </tr>
+              <tr>
+                <td>shape</td>
+                <td>"circle" | "rounded" | "square"</td>
+                <td>"circle"</td>
+                <td>Shape of the floating button</td>
+              </tr>
+              <tr>
+                <td>logo</td>
+                <td>ReactNode</td>
+                <td>&#x2014;</td>
+                <td>Custom icon rendered inside the button</td>
+              </tr>
+              <tr>
+                <td>ownTheme</td>
+                <td>boolean</td>
+                <td>true</td>
+                <td>
+                  Set to <span class="inline-code">false</span> if your app already has a
+                  ThemeProvider
+                </td>
+              </tr>
+              <tr>
+                <td>neko</td>
+                <td>boolean</td>
+                <td>false</td>
+                <td>Show an animated cat sitting on the button</td>
+              </tr>
+              <!-- <tr><td>nekoSpriteUrl</td><td>string</td><td>&#x2014;</td><td>Custom sprite URL for the neko cat animation</td></tr> -->
+            </tbody>
+          </table>
+        </div>
+        <h3 style="margin-top: 32px">Examples</h3>
+        <pre><code>// Custom color per theme
 &lt;QACenter
   buttonColor={{ dark: "#7c3aed", light: "#6d28d9" }}
   name="Bug Tracker"
@@ -304,17 +730,25 @@ echo "qa-issues.json" >> .gitignore</code><button class="copy-btn" onclick="copy
 
 // With the neko cat
 &lt;QACenter neko /&gt;</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
-  </section>
+      </section>
 
-  <!-- SSR / FRAMEWORKS -->
-  <section id="ssr">
-    <div class="section-label">Framework Usage</div>
-    <h2>Next.js &amp; React Router v7</h2>
-    <p>QA Center uses <span class="inline-code">window</span>, <span class="inline-code">localStorage</span>, and <span class="inline-code">requestAnimationFrame</span> which don't exist on the server. The component handles this with a built-in SSR guard, but placement matters.</p>
+      <!-- SSR / FRAMEWORKS -->
+      <section id="ssr">
+        <div class="section-label">Framework Usage</div>
+        <h2>Next.js &amp; React Router v7</h2>
+        <p>
+          QA Center uses <span class="inline-code">window</span>,
+          <span class="inline-code">localStorage</span>, and
+          <span class="inline-code">requestAnimationFrame</span> which don't exist on the server.
+          The component handles this with a built-in SSR guard, but placement matters.
+        </p>
 
-    <h3 style="margin-top:24px">React Router v7 (framework mode)</h3>
-    <p>Place it in your root layout inside <span class="inline-code">&lt;body&gt;</span>. The SSR guard handles the rest.</p>
-    <pre><code>// app/root.tsx
+        <h3 style="margin-top: 24px">React Router v7 (framework mode)</h3>
+        <p>
+          Place it in your root layout inside <span class="inline-code">&lt;body&gt;</span>. The SSR
+          guard handles the rest.
+        </p>
+        <pre><code>// app/root.tsx
 import { QACenter } from "@purr/qa-center";
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -331,9 +765,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
 
-    <h3 style="margin-top:24px">Next.js (App Router)</h3>
-    <p>Wrap it in a client component first.</p>
-    <pre><code>// components/QACenterWrapper.tsx
+        <h3 style="margin-top: 24px">Next.js (App Router)</h3>
+        <p>Wrap it in a client component first.</p>
+        <pre><code>// components/QACenterWrapper.tsx
 "use client";
 import { QACenter } from "@purr/qa-center";
 export default function QACenterWrapper() {
@@ -351,61 +785,125 @@ export default function RootLayout({ children }) {
   );
 }</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
 
-    <div class="callout">&#x1F4A1; The component returns null on the server and mounts only after hydration &#x2014; no dynamic imports or lazy loading needed on your end.</div>
-  </section>
+        <div class="callout">
+          &#x1F4A1; The component returns null on the server and mounts only after hydration
+          &#x2014; no dynamic imports or lazy loading needed on your end.
+        </div>
+      </section>
 
-  <!-- CLI -->
-  <section id="cli">
-    <div class="section-label">CLI</div>
-    <h2>Backend server options</h2>
-    <p>The CLI starts the Express server that handles all reads and writes to <span class="inline-code">qa-issues.json</span>.</p>
-    <pre><code>npx qa-center                           # default port 3333, opens browser
+      <!-- CLI -->
+      <section id="cli">
+        <div class="section-label">CLI</div>
+        <h2>Backend server options</h2>
+        <p>
+          The CLI starts the Express server that handles all reads and writes to
+          <span class="inline-code">qa-issues.json</span>.
+        </p>
+        <pre><code>npx qa-center                           # default port 3333, opens browser
 npx qa-center --port 4000               # custom port
 npx qa-center --no-open                 # skip auto-opening browser
 npx qa-center --data-dir ./qa-data      # store data outside Vite watch scope</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
 
-    <div class="callout">&#x26A0;&#xFE0F; Using Vite + React Router v7? Updating issues may trigger HMR reloads because Vite watches <span class="inline-code">qa-issues.json</span>. Fix: run with <span class="inline-code">--data-dir ../qa-data</span> to store the file outside your project root.</div>
+        <div class="callout">
+          &#x26A0;&#xFE0F; Using Vite + React Router v7? Updating issues may trigger HMR reloads
+          because Vite watches <span class="inline-code">qa-issues.json</span>. Fix: run with
+          <span class="inline-code">--data-dir ../qa-data</span> to store the file outside your
+          project root.
+        </div>
 
-    <h3 style="margin-top:32px">API Endpoints</h3>
-    <p>All endpoints are served at <span class="inline-code">http://localhost:3333</span> (or your configured port).</p>
+        <h3 style="margin-top: 32px">API Endpoints</h3>
+        <p>
+          All endpoints are served at <span class="inline-code">http://localhost:3333</span> (or
+          your configured port).
+        </p>
 
-    <p style="margin-top:16px; font-weight:700; color:var(--text)">Issues</p>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Method</th><th>Route</th><th>Description</th></tr></thead>
-        <tbody>
-          <tr><td>GET</td><td>/api/qa-issues</td><td>Return all issues, newest first</td></tr>
-          <tr><td>POST</td><td>/api/qa-issues</td><td>Create a new issue</td></tr>
-          <tr><td>PATCH</td><td>/api/qa-issues/:id</td><td>Update issue fields or status</td></tr>
-          <tr><td>DELETE</td><td>/api/qa-issues/:id</td><td>Delete an issue</td></tr>
-          <tr><td>POST</td><td>/api/qa-issues/:id/run-test</td><td>Run the linked Playwright test</td></tr>
-        </tbody>
-      </table>
-    </div>
+        <p style="margin-top: 16px; font-weight: 700; color: var(--text)">Issues</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Route</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>GET</td>
+                <td>/api/qa-issues</td>
+                <td>Return all issues, newest first</td>
+              </tr>
+              <tr>
+                <td>POST</td>
+                <td>/api/qa-issues</td>
+                <td>Create a new issue</td>
+              </tr>
+              <tr>
+                <td>PATCH</td>
+                <td>/api/qa-issues/:id</td>
+                <td>Update issue fields or status</td>
+              </tr>
+              <tr>
+                <td>DELETE</td>
+                <td>/api/qa-issues/:id</td>
+                <td>Delete an issue</td>
+              </tr>
+              <tr>
+                <td>POST</td>
+                <td>/api/qa-issues/:id/run-test</td>
+                <td>Run the linked Playwright test</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-    <p style="margin-top:20px; font-weight:700; color:var(--text)">Tests</p>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Method</th><th>Route</th><th>Description</th></tr></thead>
-        <tbody>
-          <tr><td>GET</td><td>/api/qa-tests</td><td>Return cached Playwright test list</td></tr>
-          <tr><td>POST</td><td>/api/qa-tests</td><td>Force rescan of test directories</td></tr>
-        </tbody>
-      </table>
-    </div>
+        <p style="margin-top: 20px; font-weight: 700; color: var(--text)">Tests</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Route</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>GET</td>
+                <td>/api/qa-tests</td>
+                <td>Return cached Playwright test list</td>
+              </tr>
+              <tr>
+                <td>POST</td>
+                <td>/api/qa-tests</td>
+                <td>Force rescan of test directories</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-    <p style="margin-top:20px; font-weight:700; color:var(--text)">Status</p>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Method</th><th>Route</th><th>Description</th></tr></thead>
-        <tbody>
-          <tr><td>GET</td><td>/api/status</td><td>Server health, issue summary, test cache info</td></tr>
-        </tbody>
-      </table>
-    </div>
+        <p style="margin-top: 20px; font-weight: 700; color: var(--text)">Status</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Route</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>GET</td>
+                <td>/api/status</td>
+                <td>Server health, issue summary, test cache info</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-    <h3 style="margin-top:28px">POST /api/qa-issues — body</h3>
-    <pre><code>{
+        <h3 style="margin-top: 28px">POST /api/qa-issues — body</h3>
+        <pre><code>{
   "title": "Bug title",          // required
   "origin": "manual",            // manual | feature | note | imported_markdown
   "status": "open",              // open | in_progress | ready_for_qa | verified | closed
@@ -418,49 +916,60 @@ npx qa-center --data-dir ./qa-data      # store data outside Vite watch scope</c
   "notes": "Additional notes"
 }</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
 
-    <h3 style="margin-top:20px">PATCH /api/qa-issues/:id — body</h3>
-    <pre><code>{
+        <h3 style="margin-top: 20px">PATCH /api/qa-issues/:id — body</h3>
+        <pre><code>{
   "status": "in_progress",
   "notes": "Updated notes"
 }</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
-  </section>
+      </section>
+    </div>
 
-</div>
+    <footer>
+      <p>
+        QA Center &middot; MIT License &middot;
+        <a href="https://www.byjeff.dev/" target="_blank">byjeff.dev</a> &middot;
+        <a href="https://www.kodecat.com/" target="_blank">kodecat.com</a>
+      </p>
+      <p style="margin-top: 8px">
+        Neko cat sprite based on
+        <a href="https://github.com/adryd325/oneko.js" target="_blank">oneko.js</a> by
+        <a href="https://github.com/adryd325" target="_blank">adryd325</a> &middot; Original Neko
+        software (1989) by Naoshi Watanabe
+      </p>
+    </footer>
 
-<footer>
-  <p>QA Center &middot; MIT License &middot; <a href="https://www.byjeff.dev/" target="_blank">byjeff.dev</a> &middot; <a href="https://www.kodecat.com/" target="_blank">kodecat.com</a></p>
-  <p style="margin-top:8px">Neko cat sprite based on <a href="https://github.com/adryd325/oneko.js" target="_blank">oneko.js</a> by <a href="https://github.com/adryd325" target="_blank">adryd325</a> &middot; Original Neko software (1989) by Naoshi Watanabe</p>
-</footer>
-
-<script>
-  const toggle = document.getElementById('theme-toggle');
-  const html = document.documentElement;
-  let theme = 'dark';
-  toggle.addEventListener('click', () => {
-    theme = theme === 'dark' ? 'light' : 'dark';
-    html.setAttribute('data-theme', theme);
-    toggle.textContent = theme === 'dark' ? '\u2600 Light' : '\u263E Dark';
-  });
-  function copy(btn) {
-    const code = btn.previousElementSibling.textContent;
-    navigator.clipboard.writeText(code).then(() => {
-      const orig = btn.textContent;
-      btn.textContent = 'copied!';
-      setTimeout(() => btn.textContent = orig, 1500);
-    });
-  }
-  const sections = document.querySelectorAll('section[id]');
-  const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        navLinks.forEach(a => a.style.color = '');
-        const active = document.querySelector('.nav-links a[href="#' + e.target.id + '"]');
-        if (active) active.style.color = 'var(--accent)';
+    <script>
+      const toggle = document.getElementById("theme-toggle");
+      const html = document.documentElement;
+      let theme = "dark";
+      toggle.addEventListener("click", () => {
+        theme = theme === "dark" ? "light" : "dark";
+        html.setAttribute("data-theme", theme);
+        toggle.textContent = theme === "dark" ? "\u2600 Light" : "\u263E Dark";
+      });
+      function copy(btn) {
+        const code = btn.previousElementSibling.textContent;
+        navigator.clipboard.writeText(code).then(() => {
+          const orig = btn.textContent;
+          btn.textContent = "copied!";
+          setTimeout(() => (btn.textContent = orig), 1500);
+        });
       }
-    });
-  }, { rootMargin: '-40% 0px -55% 0px' });
-  sections.forEach(s => observer.observe(s));
-</script>
-</body>
+      const sections = document.querySelectorAll("section[id]");
+      const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              navLinks.forEach((a) => (a.style.color = ""));
+              const active = document.querySelector('.nav-links a[href="#' + e.target.id + '"]');
+              if (active) active.style.color = "var(--accent)";
+            }
+          });
+        },
+        { rootMargin: "-40% 0px -55% 0px" }
+      );
+      sections.forEach((s) => observer.observe(s));
+    </script>
+  </body>
 </html>

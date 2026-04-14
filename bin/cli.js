@@ -12,9 +12,7 @@ const noOpen = args.includes("--no-open");
 const dataDirArg = args.indexOf("--data-dir");
 // --data-dir lets consumers store qa-issues.json outside their Vite watch scope
 // e.g. npx qa-center --data-dir ~/.qa-data  (prevents Vite HMR reload on save)
-const dataDir = dataDirArg !== -1
-  ? path.resolve(args[dataDirArg + 1])
-  : process.cwd();
+const dataDir = dataDirArg !== -1 ? path.resolve(args[dataDirArg + 1]) : process.cwd();
 
 // Validate port range
 if (isNaN(rawPort) || rawPort < 1024 || rawPort > 65535) {

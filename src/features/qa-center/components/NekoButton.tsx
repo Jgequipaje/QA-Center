@@ -12,11 +12,18 @@ import { useEffect, useRef, useState } from "react";
 
 // Sprite positions from oneko.js (col, row) — each frame is 32x32px
 const SPRITES = {
-  idle:        [[-3, -3]],
-  tired:       [[-3, -2]],
-  sleeping:    [[-2, 0], [-2, -1]],
-  scratchSelf: [[-5, 0], [-6, 0], [-7, 0]],
-  alert:       [[-7, -3]],
+  idle: [[-3, -3]],
+  tired: [[-3, -2]],
+  sleeping: [
+    [-2, 0],
+    [-2, -1],
+  ],
+  scratchSelf: [
+    [-5, 0],
+    [-6, 0],
+    [-7, 0],
+  ],
+  alert: [[-7, -3]],
 } as const;
 
 type SpriteName = keyof typeof SPRITES;
@@ -24,8 +31,140 @@ type SpriteName = keyof typeof SPRITES;
 const NEKO_SIZE = 32;
 
 // Sequences: sleeping when no issues, grooming when issues exist
-const IDLE_SEQUENCE: SpriteName[]   = ["idle", "idle", "idle", "idle", "idle", "idle", "idle", "idle", "idle", "idle", "idle", "idle", "tired", "tired", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping", "sleeping"];
-const ACTIVE_SEQUENCE: SpriteName[] = ["idle", "idle", "idle", "idle", "alert", "alert", "scratchSelf", "scratchSelf", "scratchSelf", "scratchSelf", "scratchSelf", "scratchSelf", "idle", "idle", "idle", "idle", "idle", "idle", "idle", "idle", "scratchSelf", "scratchSelf", "scratchSelf", "scratchSelf", "idle", "idle", "idle", "idle", "idle", "idle"];
+const IDLE_SEQUENCE: SpriteName[] = [
+  "idle",
+  "idle",
+  "idle",
+  "idle",
+  "idle",
+  "idle",
+  "idle",
+  "idle",
+  "idle",
+  "idle",
+  "idle",
+  "idle",
+  "tired",
+  "tired",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+  "sleeping",
+];
+const ACTIVE_SEQUENCE: SpriteName[] = [
+  "idle",
+  "idle",
+  "idle",
+  "idle",
+  "alert",
+  "alert",
+  "scratchSelf",
+  "scratchSelf",
+  "scratchSelf",
+  "scratchSelf",
+  "scratchSelf",
+  "scratchSelf",
+  "idle",
+  "idle",
+  "idle",
+  "idle",
+  "idle",
+  "idle",
+  "idle",
+  "idle",
+  "scratchSelf",
+  "scratchSelf",
+  "scratchSelf",
+  "scratchSelf",
+  "idle",
+  "idle",
+  "idle",
+  "idle",
+  "idle",
+  "idle",
+];
 
 type Props = {
   buttonX: number;
@@ -36,14 +175,21 @@ type Props = {
   baseUrl: string;
 };
 
-export default function NekoButton({ buttonX, buttonY, buttonSize, hasIssues, spriteUrl, baseUrl }: Props) {
+export default function NekoButton({
+  buttonX,
+  buttonY,
+  buttonSize,
+  hasIssues,
+  spriteUrl,
+  baseUrl,
+}: Props) {
   const url = spriteUrl ?? `${baseUrl}/oneko.gif`;
 
   const [bgPos, setBgPos] = useState(`${-3 * NEKO_SIZE}px ${-3 * NEKO_SIZE}px`);
   const seqIndexRef = useRef(0);
-  const frameRef    = useRef(0);
-  const rafRef      = useRef<number>(0);
-  const lastTsRef   = useRef<number>(0);
+  const frameRef = useRef(0);
+  const rafRef = useRef<number>(0);
+  const lastTsRef = useRef<number>(0);
 
   // Cat sits centered on top of the button, clamped to viewport
   const catX = buttonX + buttonSize / 2 - NEKO_SIZE / 2;
@@ -54,16 +200,17 @@ export default function NekoButton({ buttonX, buttonY, buttonSize, hasIssues, sp
 
   useEffect(() => {
     seqIndexRef.current = 0;
-    frameRef.current    = 0;
+    frameRef.current = 0;
   }, [hasIssues]);
 
   useEffect(() => {
     function tick(ts: number) {
       if (!lastTsRef.current) lastTsRef.current = ts;
-      if (ts - lastTsRef.current > 150) { // ~6.5fps — slow, relaxed
+      if (ts - lastTsRef.current > 150) {
+        // ~6.5fps — slow, relaxed
         lastTsRef.current = ts;
 
-        const seq   = hasIssues ? ACTIVE_SEQUENCE : IDLE_SEQUENCE;
+        const seq = hasIssues ? ACTIVE_SEQUENCE : IDLE_SEQUENCE;
         const sName = seq[seqIndexRef.current % seq.length];
         const frames = SPRITES[sName] as readonly (readonly [number, number])[];
         const [col, row] = frames[frameRef.current % frames.length];
@@ -87,18 +234,18 @@ export default function NekoButton({ buttonX, buttonY, buttonSize, hasIssues, sp
     <div
       aria-hidden
       style={{
-        position:           "fixed",
-        left:               catX,
-        top:                catY,
-        width:              NEKO_SIZE,
-        height:             NEKO_SIZE,
-        backgroundImage:    `url(${url})`,
+        position: "fixed",
+        left: catX,
+        top: catY,
+        width: NEKO_SIZE,
+        height: NEKO_SIZE,
+        backgroundImage: `url(${url})`,
         backgroundPosition: bgPos,
-        backgroundRepeat:   "no-repeat",
-        backgroundSize:     "auto",
-        imageRendering:     "pixelated",
-        pointerEvents:      "none",
-        zIndex:             1001,
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "auto",
+        imageRendering: "pixelated",
+        pointerEvents: "none",
+        zIndex: 1001,
       }}
     />
   );

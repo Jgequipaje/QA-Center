@@ -28,12 +28,18 @@ function loadPos(): Pos | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Pos;
     if (typeof parsed.x === "number" && typeof parsed.y === "number") return parsed;
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return null;
 }
 
 function savePos(pos: Pos) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(pos)); } catch { /* ignore */ }
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(pos));
+  } catch {
+    /* ignore */
+  }
 }
 
 function defaultPos(buttonSize: number): Pos {
@@ -50,11 +56,15 @@ export default function QAFloatingButton() {
   const { theme } = useTheme();
   const t = tokens[theme];
   const { isDrawerOpen, openDrawer, closeDrawer, issues, loadIssues } = useQACenterStore();
-  const { buttonColor, buttonSize, shape, logo, baseUrl, neko, nekoSpriteUrl } = useQACenterConfig();
-  const openCount = issues.filter((i) => i.status === "open" || i.status === "in_progress" || i.status === "ready_for_qa").length;
-  const nekoActive = issues.some((i) =>
-    (i.origin === "manual" || i.origin === "feature") &&
-    (i.status === "open" || i.status === "in_progress" || i.status === "ready_for_qa")
+  const { buttonColor, buttonSize, shape, logo, baseUrl, neko, nekoSpriteUrl } =
+    useQACenterConfig();
+  const openCount = issues.filter(
+    (i) => i.status === "open" || i.status === "in_progress" || i.status === "ready_for_qa"
+  ).length;
+  const nekoActive = issues.some(
+    (i) =>
+      (i.origin === "manual" || i.origin === "feature") &&
+      (i.status === "open" || i.status === "in_progress" || i.status === "ready_for_qa")
   );
 
   const [pos, setPos] = useState<Pos | null>(null);
@@ -65,7 +75,9 @@ export default function QAFloatingButton() {
   const startPos = useRef<Pos>({ x: 0, y: 0 });
   const btnRef = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => { setPos(loadPos() ?? defaultPos(buttonSize)); }, [buttonSize]);
+  useEffect(() => {
+    setPos(loadPos() ?? defaultPos(buttonSize));
+  }, [buttonSize]);
 
   // Load issues on mount so the badge count is correct immediately,
   // then poll every 5s while the drawer is open to pick up changes from other tabs/contexts.
@@ -89,22 +101,32 @@ export default function QAFloatingButton() {
     return () => window.removeEventListener("resize", onResize);
   }, [buttonSize]);
 
-  const onPointerMove = useCallback((e: PointerEvent) => {
-    if (!dragging.current) return;
-    const dx = e.clientX - startPtr.current.x;
-    const dy = e.clientY - startPtr.current.y;
-    if (!didDrag.current && Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
-    didDrag.current = true;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    setPos({ x: clamp(startPos.current.x + dx, EDGE_MARGIN, vw - buttonSize - EDGE_MARGIN), y: clamp(startPos.current.y + dy, EDGE_MARGIN, vh - buttonSize - EDGE_MARGIN) });
-  }, [buttonSize]);
+  const onPointerMove = useCallback(
+    (e: PointerEvent) => {
+      if (!dragging.current) return;
+      const dx = e.clientX - startPtr.current.x;
+      const dy = e.clientY - startPtr.current.y;
+      if (!didDrag.current && Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
+      didDrag.current = true;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      setPos({
+        x: clamp(startPos.current.x + dx, EDGE_MARGIN, vw - buttonSize - EDGE_MARGIN),
+        y: clamp(startPos.current.y + dy, EDGE_MARGIN, vh - buttonSize - EDGE_MARGIN),
+      });
+    },
+    [buttonSize]
+  );
 
   const onPointerUp = useCallback(() => {
     if (!dragging.current) return;
     dragging.current = false;
     if (pointerId.current !== null) {
-      try { btnRef.current?.releasePointerCapture(pointerId.current); } catch { /* already released */ }
+      try {
+        btnRef.current?.releasePointerCapture(pointerId.current);
+      } catch {
+        /* already released */
+      }
       pointerId.current = null;
     }
     setPos((prev) => {
@@ -132,13 +154,20 @@ export default function QAFloatingButton() {
 
   function handleClick() {
     if (didDrag.current) return;
-    if (isDrawerOpen) { closeDrawer(); }
-    else { openDrawer(); loadIssues(baseUrl); }
+    if (isDrawerOpen) {
+      closeDrawer();
+    } else {
+      openDrawer();
+      loadIssues(baseUrl);
+    }
   }
 
   if (!pos) return null;
 
-  const activeBackground = theme === "dark" ? (buttonColor as { dark: string; light: string }).dark : (buttonColor as { dark: string; light: string }).light;
+  const activeBackground =
+    theme === "dark"
+      ? (buttonColor as { dark: string; light: string }).dark
+      : (buttonColor as { dark: string; light: string }).light;
 
   return (
     <>
@@ -153,43 +182,78 @@ export default function QAFloatingButton() {
         />
       )}
       <button
-      ref={btnRef}
-      onPointerDown={onPointerDown}
-      onClick={handleClick}
-      title="QA Center"
-      data-testid="qa-floating-btn"
-      style={{
-        position: "fixed", left: pos.x, top: pos.y, zIndex: 998,
-        width: buttonSize, height: buttonSize, borderRadius: shapeToRadius(shape),
-        background: isDrawerOpen ? t.bgMuted : activeBackground,
-        color: isDrawerOpen ? t.textMuted : t.btnActiveTxt,
-        border: `1px solid ${t.border}`,
-        cursor: dragging.current ? "grabbing" : "grab",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 13, fontWeight: 700,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
-        transition: "background 0.15s, box-shadow 0.15s",
-        fontFamily: "inherit", userSelect: "none", touchAction: "none",
-      }}
-    >
-      {isDrawerOpen ? "✕" : (
-        logo ? (
-          <span style={{
-            display: "flex", alignItems: "center", justifyContent: "center",
-            width: "100%", height: "100%",
-            fontSize: Math.round(buttonSize * 0.65) + "px",
-            lineHeight: 1,
-          }}>
+        ref={btnRef}
+        onPointerDown={onPointerDown}
+        onClick={handleClick}
+        title="QA Center"
+        data-testid="qa-floating-btn"
+        style={{
+          position: "fixed",
+          left: pos.x,
+          top: pos.y,
+          zIndex: 998,
+          width: buttonSize,
+          height: buttonSize,
+          borderRadius: shapeToRadius(shape),
+          background: isDrawerOpen ? t.bgMuted : activeBackground,
+          color: isDrawerOpen ? t.textMuted : t.btnActiveTxt,
+          border: `1px solid ${t.border}`,
+          cursor: dragging.current ? "grabbing" : "grab",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 13,
+          fontWeight: 700,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+          transition: "background 0.15s, box-shadow 0.15s",
+          fontFamily: "inherit",
+          userSelect: "none",
+          touchAction: "none",
+        }}
+      >
+        {isDrawerOpen ? (
+          "✕"
+        ) : logo ? (
+          <span
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "100%",
+              height: "100%",
+              fontSize: Math.round(buttonSize * 0.65) + "px",
+              lineHeight: 1,
+            }}
+          >
             {logo}
           </span>
-        ) : "QA"
-      )}
-      {!isDrawerOpen && openCount > 0 && (
-        <span style={{ position: "absolute", top: -4, right: -4, background: t.failText, color: "#fff", borderRadius: "50%", width: 16, height: 16, fontSize: 9, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${t.bg}`, pointerEvents: "none" }}>
-          {openCount > 9 ? "9+" : openCount}
-        </span>
-      )}
-    </button>
+        ) : (
+          "QA"
+        )}
+        {!isDrawerOpen && openCount > 0 && (
+          <span
+            style={{
+              position: "absolute",
+              top: -4,
+              right: -4,
+              background: t.failText,
+              color: "#fff",
+              borderRadius: "50%",
+              width: 16,
+              height: 16,
+              fontSize: 9,
+              fontWeight: 700,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: `1px solid ${t.bg}`,
+              pointerEvents: "none",
+            }}
+          >
+            {openCount > 9 ? "9+" : openCount}
+          </span>
+        )}
+      </button>
     </>
   );
 }
