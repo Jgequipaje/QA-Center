@@ -17,7 +17,10 @@
     "qa:dev": "vite",
     "format": "prettier --write \"src/**/*.{ts,tsx}\" \"server/**/*.js\" \"e2e/**/*.ts\" \"tests/**/*.ts\"",
     "server": "node bin/cli.js",
-    "start": "node bin/cli.js"
+    "start": "node bin/cli.js",
+    "lint": "eslint src server e2e tests --ext .ts,.tsx,.js",
+    "typecheck": "tsc --noEmit",
+    "test": "playwright test"
   },
   "dependencies": {
     "cors": "^2.8.5",
