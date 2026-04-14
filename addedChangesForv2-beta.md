@@ -25,3 +25,8 @@
 
 - `src/features/qa-center/components/NewIssueForm.tsx` — added testids to repro steps, feature description, acceptance criteria, and note content textareas
 - `src/features/qa-center/components/IssueDetail.tsx` — added testids to description, repro steps, and acceptance criteria textareas in edit mode
+
+## [April 14, 2026] - Fixed ESLint setup and resolved all lint errors
+
+- `src/features/qa-center/components/ImportIssuesModal.tsx` — replaced ternary with if/else to fix `no-unused-expressions` lint error
+- `src/features/qa-center/components/QAFloatingButton.tsx` — added `eslint-disable` comment on polling useEffect to suppress false-positive `exhaustive-deps` warning for stable Zustand action

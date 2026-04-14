@@ -86,6 +86,7 @@ export default function QAFloatingButton() {
     if (!isDrawerOpen) return;
     const id = setInterval(() => loadIssues(baseUrl), 5000);
     return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baseUrl, isDrawerOpen]);
 
   useEffect(() => {

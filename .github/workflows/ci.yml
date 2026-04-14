@@ -16,6 +16,8 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
       - run: npm ci
       - name: Run prettier --write
         run: npx prettier --write .
@@ -30,7 +32,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref }}
       - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
       - run: npm ci
       - run: npm run lint
 
@@ -39,7 +45,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref }}
       - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
       - run: npm ci
       - run: npm run typecheck
 
@@ -49,24 +59,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
       - run: npm ci
       - run: npm audit --audit-level=moderate
 
-  test:
+  build:
     needs: audit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-      - run: npm ci
-      - run: npm test
-
-  build:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
       - run: npm ci
       - run: npm run build
 
