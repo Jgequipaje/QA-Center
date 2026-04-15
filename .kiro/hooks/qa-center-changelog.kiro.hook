@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "QA Center Changelog Logger",
+  "description": "After each agent session, logs any changes made to QA Center files into addedChangesForv2-beta.md, then provides git commands to copy-paste.",
+  "version": "1",
+  "when": {
+    "type": "agentStop"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Review what was just done in this session. If any files inside src/features/qa-center/, server/, or tests/ were modified, created, or deleted, append a concise changelog entry to addedChangesForv2-beta.md. Use this format:\n\n## [Date] - Short summary of change\n- What was changed and why (one line per change)\n\nOnly append if something relevant actually changed. Do not overwrite existing content.\n\nAfter that, provide the following git commands for the user to copy-paste, filling in an appropriate conventional commit message:\n\n```bash\ngit add -A\ngit commit -m \"<short conventional commit message summarizing this session>\"\n```"
+  }
+}

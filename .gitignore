@@ -13,7 +13,6 @@ e2e/
 # Editor
 .vscode/
 .idea/
-.kiro/
 
 # OS
 .DS_Store
@@ -31,5 +30,3 @@ playwright-debug.txt
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
-
-.github/workflows/settings.yml
