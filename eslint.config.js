@@ -40,11 +40,12 @@ export default tseslint.config(
       "no-control-regex": "off",
     },
   },
-  // Test files — allow any types and console
+  // Test files — allow any types, console, and unused vars in stubs
   {
     files: ["tests/**/*.ts"],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": "off",
     },
   },
   {

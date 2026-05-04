@@ -63,7 +63,7 @@ export default function QAFloatingButton() {
   ).length;
   const nekoActive = issues.some(
     (i) =>
-      (i.origin === "manual" || i.origin === "feature") &&
+      (i.origin === "issue" || i.origin === "feature") &&
       (i.status === "open" || i.status === "in_progress" || i.status === "ready_for_qa")
   );
 
@@ -179,7 +179,6 @@ export default function QAFloatingButton() {
           buttonSize={buttonSize}
           hasIssues={nekoActive}
           spriteUrl={nekoSpriteUrl}
-          baseUrl={baseUrl}
         />
       )}
       <button
@@ -251,7 +250,7 @@ export default function QAFloatingButton() {
               pointerEvents: "none",
             }}
           >
-            {openCount > 9 ? "9+" : openCount}
+            {openCount > 99 ? "99+" : openCount}
           </span>
         )}
       </button>

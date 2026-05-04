@@ -31,12 +31,15 @@ function isSafeTestFile(filePath, cwd) {
  * Run: npx playwright test <file> -g "<partial title>" --reporter=json
  * Simple, no config generation, no tags required.
  */
-function runPlaywright(testFile, grepTitle, cwd) {
+function runPlaywright(testFile, grepTarget, cwd) {
   return new Promise((resolve) => {
-    const words = grepTitle.trim().split(/\s+/);
-    const keyword = words.slice(1, 4).join(" ") || words[0];
+    // If grepTarget is an [id:xxx] tag use it directly — it's already precise.
+    // Otherwise fall back to the old word-slice heuristic for plain titles.
+    const keyword = grepTarget.startsWith("[id:")
+      ? grepTarget
+      : grepTarget.trim().split(/\s+/).slice(1, 4).join(" ") || grepTarget.trim();
 
-    // Use --reporter=line (stdout only, no file I/O) and add a hard timeout
+    // Pass args as an array to spawn — avoids DEP0190 shell concatenation warning
     const args = [
       "playwright",
       "test",
@@ -50,7 +53,7 @@ function runPlaywright(testFile, grepTitle, cwd) {
 
     const proc = spawn("npx", args, {
       cwd,
-      shell: true,
+      shell: false,
       env: { ...process.env, PLAYWRIGHT_HTML_OPEN: "never" },
     });
 
@@ -79,7 +82,7 @@ function runPlaywright(testFile, grepTitle, cwd) {
   });
 }
 
-// POST /api/qa-issues/:id/run-test
+// POST /api/qa-items/:id/run-test
 runTestRouter.post("/:id/run-test", async (req, res) => {
   const { id } = req.params;
   const cwd = req.appCwd;
@@ -93,11 +96,13 @@ runTestRouter.post("/:id/run-test", async (req, res) => {
     return res.status(400).json({ error: "Invalid or unsafe test file path." });
   }
 
-  const { file, testTitle } = issue.linkedTest;
+  const { file, testTitle, testId } = issue.linkedTest;
   const now = new Date().toISOString();
 
-  console.log(`\n[QA Center] Running: ${file} -g "${testTitle}"\n`);
-  const { exitCode, output } = await runPlaywright(file, testTitle, cwd);
+  // Prefer stable [id:xxx] grep if available — works reliably with DDT
+  const grepTarget = testId ? `[id:${testId}]` : testTitle;
+  console.log(`\n[QA Center] Running: ${file} -g "${grepTarget}"\n`);
+  const { exitCode, output } = await runPlaywright(file, grepTarget, cwd);
 
   const stripAnsi = (s) => s.replace(/\x1B\[[0-9;]*m/g, "");
   const cleanOutput = stripAnsi(output);

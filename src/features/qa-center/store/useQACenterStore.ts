@@ -2,6 +2,8 @@ import { create } from "zustand";
 import type { Issue, IssueStatus, IssueFilters } from "../types";
 import * as api from "../services/issueApiService";
 
+type Toast = { id: number; message: string; type: "success" | "error" };
+
 type QACenterState = {
   isDrawerOpen: boolean;
   selectedIssueId: string | null;
@@ -10,6 +12,7 @@ type QACenterState = {
   loadError: string | null;
   issues: Issue[];
   filters: IssueFilters;
+  toast: Toast | null;
 
   openDrawer: () => void;
   closeDrawer: () => void;
@@ -19,9 +22,11 @@ type QACenterState = {
   setFilters: (patch: Partial<IssueFilters>) => void;
   switchTab: (origin: IssueFilters["origin"]) => void;
   clearFilters: () => void;
+  showToast: (message: string, type?: "success" | "error") => void;
+  dismissToast: () => void;
 
   loadIssues: (baseUrl: string) => Promise<void>;
-  addIssue: (baseUrl: string, issue: Issue) => void;
+  addIssue: (baseUrl: string, issue: Issue) => Promise<void>;
   updateIssueStatus: (baseUrl: string, id: string, status: IssueStatus) => void;
   updateIssue: (id: string, patch: Partial<Omit<Issue, "id" | "createdAt">>) => void;
   saveIssue: (
@@ -39,7 +44,8 @@ export const useQACenterStore = create<QACenterState>((set, get) => ({
   isLoading: false,
   loadError: null,
   issues: [],
-  filters: { origin: "manual", status: "open" },
+  filters: { origin: "all", status: "all" },
+  toast: null,
 
   openDrawer: () => set({ isDrawerOpen: true }),
   closeDrawer: () => set({ isDrawerOpen: false, selectedIssueId: null, isCreating: false }),
@@ -47,8 +53,18 @@ export const useQACenterStore = create<QACenterState>((set, get) => ({
   openCreateForm: () => set({ isCreating: true, selectedIssueId: null }),
   closeCreateForm: () => set({ isCreating: false }),
   setFilters: (patch) => set((s) => ({ filters: { ...s.filters, ...patch } })),
-  switchTab: (origin) => set({ filters: { origin, status: "open", page: 1 } }),
-  clearFilters: () => set({ filters: { origin: "manual", status: "open", page: 1 } }),
+  switchTab: (origin) =>
+    set({ filters: { origin, status: origin === "all" ? "all" : "open", page: 1 } }),
+  clearFilters: () => set({ filters: { origin: "all", status: "all", page: 1 } }),
+
+  showToast: (message, type = "success") => {
+    const id = Date.now();
+    set({ toast: { id, message, type } });
+    setTimeout(() => {
+      set((s) => (s.toast?.id === id ? { toast: null } : {}));
+    }, 3500);
+  },
+  dismissToast: () => set({ toast: null }),
 
   loadIssues: async (baseUrl) => {
     set({ isLoading: true, loadError: null });
@@ -63,19 +79,14 @@ export const useQACenterStore = create<QACenterState>((set, get) => ({
     }
   },
 
-  addIssue: (baseUrl, issue) => {
-    set((s) => ({ issues: [issue, ...s.issues], isCreating: false, selectedIssueId: issue.id }));
-    api
-      .createIssue(baseUrl, issue)
-      .then((saved) => {
-        set((s) => ({
-          issues: s.issues.map((i) => (i.id === issue.id ? saved : i)),
-          selectedIssueId: s.selectedIssueId === issue.id ? saved.id : s.selectedIssueId,
-        }));
-      })
-      .catch(() => {
-        set((s) => ({ issues: s.issues.filter((i) => i.id !== issue.id) }));
-      });
+  addIssue: async (baseUrl, issue) => {
+    // Don't close the form yet — wait for API confirmation first
+    const saved = await api.createIssue(baseUrl, issue);
+    set((s) => ({
+      issues: [saved, ...s.issues],
+      isCreating: false,
+      selectedIssueId: saved.id,
+    }));
   },
 
   updateIssueStatus: (baseUrl, id, status) => {
@@ -101,8 +112,9 @@ export const useQACenterStore = create<QACenterState>((set, get) => ({
     try {
       const saved = await api.patchIssue(baseUrl, id, patch);
       set((s) => ({ issues: s.issues.map((i) => (i.id === id ? saved : i)) }));
-    } catch {
+    } catch (e) {
       set({ issues: prev });
+      throw e;
     }
   },
 

@@ -13,7 +13,7 @@ export default function QADrawer() {
   const t = tokens[theme];
   const { name } = useQACenterConfig();
   const [showAddMenu, setShowAddMenu] = useState(false);
-  const [createType, setCreateType] = useState<IssueOrigin>("manual");
+  const [createType, setCreateType] = useState<IssueOrigin>("issue");
   const addBtnRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -29,6 +29,8 @@ export default function QADrawer() {
     openCreateForm,
     closeCreateForm,
     isLoading,
+    toast,
+    dismissToast,
   } = useQACenterStore();
 
   // Close dropdown when clicking outside
@@ -56,7 +58,7 @@ export default function QADrawer() {
   const page = filters.page ?? 1;
   const setPage = (p: number) => setFilters({ page: p });
 
-  const currentOrigin = filters.origin ?? "manual";
+  const currentOrigin = filters.origin ?? "issue";
   const currentStatus = filters.status ?? "open";
   const activeOrigin = filters.search ? "all" : currentOrigin;
   const activeStatus = currentStatus;
@@ -71,11 +73,13 @@ export default function QADrawer() {
       );
     }
 
-    // Strict origin match
-    if (currentOrigin === "manual") {
-      if (i.origin !== "manual" && i.origin !== "imported_markdown") return false;
-    } else if (i.origin !== currentOrigin) {
-      return false;
+    // Origin match — "all" skips origin filtering
+    if (currentOrigin !== "all") {
+      if (currentOrigin === "issue") {
+        if (i.origin !== "issue" && i.origin !== "imported_markdown") return false;
+      } else if (i.origin !== currentOrigin) {
+        return false;
+      }
     }
 
     // Status match
@@ -98,7 +102,7 @@ export default function QADrawer() {
         data-testid="qa-drawer-overlay"
         onClick={closeDrawer}
         style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 1002 }}
-      />
+      />{" "}
       <div
         data-testid="qa-drawer"
         style={{
@@ -178,7 +182,7 @@ export default function QADrawer() {
                       }}
                     >
                       {[
-                        { type: "manual" as IssueOrigin, label: "🐛 New Issue" },
+                        { type: "issue" as IssueOrigin, label: "🐛 New Issue" },
                         { type: "feature" as IssueOrigin, label: "✨ Feature" },
                         { type: "note" as IssueOrigin, label: "📝 Note" },
                       ].map(({ type, label }) => (
@@ -262,12 +266,13 @@ export default function QADrawer() {
             <div style={{ display: "flex", padding: "0 12px", gap: 2 }}>
               {(
                 [
-                  { value: "manual", label: "🐛 Issues" },
+                  { value: "all", label: "All" },
+                  { value: "issue", label: "🐛 Issues" },
                   { value: "feature", label: "✨ Features" },
                   { value: "note", label: "📝 Notes" },
                 ] as const
               ).map(({ value, label }) => {
-                const active = (filters.origin ?? "manual") === value;
+                const active = (filters.origin ?? "all") === value;
                 return (
                   <button
                     key={value}
@@ -309,30 +314,39 @@ export default function QADrawer() {
                 }}
               >
                 {(() => {
-                  const origin = filters.origin ?? "manual";
+                  const origin = filters.origin ?? "issue";
                   const statusOptions =
-                    origin === "feature"
+                    origin === "all"
                       ? [
                           { v: "all", l: "All" },
                           { v: "open", l: "Open" },
                           { v: "in_progress", l: "In Progress" },
-                          { v: "verified", l: "Done" },
+                          { v: "ready_for_qa", l: "Ready for QA" },
+                          { v: "verified", l: "Verified" },
                           { v: "closed", l: "Closed" },
                         ]
-                      : origin === "note"
+                      : origin === "feature"
                         ? [
                             { v: "all", l: "All" },
                             { v: "open", l: "Open" },
-                            { v: "closed", l: "Archived" },
-                          ]
-                        : [
-                            { v: "all", l: "All" },
-                            { v: "open", l: "Open" },
                             { v: "in_progress", l: "In Progress" },
-                            { v: "ready_for_qa", l: "Ready for QA" },
-                            { v: "verified", l: "Verified" },
+                            { v: "verified", l: "Done" },
                             { v: "closed", l: "Closed" },
-                          ];
+                          ]
+                        : origin === "note"
+                          ? [
+                              { v: "all", l: "All" },
+                              { v: "open", l: "Open" },
+                              { v: "closed", l: "Archived" },
+                            ]
+                          : [
+                              { v: "all", l: "All" },
+                              { v: "open", l: "Open" },
+                              { v: "in_progress", l: "In Progress" },
+                              { v: "ready_for_qa", l: "Ready for QA" },
+                              { v: "verified", l: "Verified" },
+                              { v: "closed", l: "Closed" },
+                            ];
 
                   return statusOptions.map(({ v, l }) => {
                     const active = (filters.status ?? "open") === v;
@@ -379,21 +393,26 @@ export default function QADrawer() {
                 message={
                   filters.search
                     ? "No results found"
-                    : activeOrigin === "feature"
-                      ? "No features found"
-                      : activeOrigin === "note"
-                        ? "No notes found"
-                        : "No issues found"
+                    : activeOrigin === "all"
+                      ? "No items found"
+                      : activeOrigin === "feature"
+                        ? "No features found"
+                        : activeOrigin === "note"
+                          ? "No notes found"
+                          : "No issues found"
                 }
                 sub={(() => {
                   if (filters.search)
                     return `No items match "${filters.search}". Try a different search term.`;
                   const hasAny = issues.some((i) =>
-                    activeOrigin === "manual"
-                      ? i.origin === "manual" || i.origin === "imported_markdown"
-                      : i.origin === activeOrigin
+                    activeOrigin === "all"
+                      ? true
+                      : activeOrigin === "issue"
+                        ? i.origin === "issue" || i.origin === "imported_markdown"
+                        : i.origin === activeOrigin
                   );
                   if (!hasAny) {
+                    if (activeOrigin === "all") return "Click '+ Add' to log your first item.";
                     if (activeOrigin === "feature")
                       return "Click '+ Add' → Feature to log your first feature.";
                     if (activeOrigin === "note")
@@ -418,6 +437,8 @@ export default function QADrawer() {
                                   ? "archived"
                                   : "closed"
                                 : activeStatus;
+                  if (activeOrigin === "all")
+                    return `No ${statusLabel ? statusLabel + " " : ""}items. Try a different filter.`;
                   if (activeOrigin === "feature")
                     return `No ${statusLabel ? statusLabel + " " : ""}features. Try a different filter.`;
                   if (activeOrigin === "note")
@@ -495,6 +516,34 @@ export default function QADrawer() {
             ))}
         </div>
       </div>
+      {/* Toast notification */}
+      {toast && (
+        <div
+          data-testid="qa-toast"
+          onClick={dismissToast}
+          style={{
+            position: "fixed",
+            top: 24,
+            right: 24,
+            zIndex: 1200,
+            background: toast.type === "error" ? t.failBg : "#166534",
+            color: toast.type === "error" ? t.failText : "#4ade80",
+            border: `1px solid ${toast.type === "error" ? t.failText : "#166534"}`,
+            borderRadius: 8,
+            padding: "10px 16px",
+            fontSize: 13,
+            fontWeight: 600,
+            fontFamily: "inherit",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
+            cursor: "pointer",
+            maxWidth: 320,
+            lineHeight: 1.4,
+          }}
+        >
+          {toast.type === "success" ? "✓ " : "✕ "}
+          {toast.message}
+        </div>
+      )}
     </>
   );
 }

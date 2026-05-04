@@ -12,7 +12,7 @@ const SEVERITY_COLOR: Record<string, string> = {
 };
 
 const ORIGIN_BADGE: Record<string, { label: string; bg: string; color: string }> = {
-  manual: { label: "🐛 Issue", bg: "#450a0a", color: "#f87171" },
+  issue: { label: "🐛 Issue", bg: "#450a0a", color: "#f87171" },
   feature: { label: "✨ Feature", bg: "#1e1030", color: "#a78bfa" },
   note: { label: "📝 Note", bg: "#1c1400", color: "#fbbf24" },
   imported_markdown: { label: "Imported", bg: "#1e2a3a", color: "#93c5fd" },
@@ -34,7 +34,7 @@ export default function IssueCard({ issue, selected, onClick }: Props) {
   const { theme } = useTheme();
   const t = tokens[theme];
   const isImported = issue.origin === "imported_markdown";
-  const originBadge = ORIGIN_BADGE[issue.origin] ?? ORIGIN_BADGE.manual;
+  const originBadge = ORIGIN_BADGE[issue.origin] ?? ORIGIN_BADGE.issue;
   const barColor =
     issue.origin === "feature"
       ? "#a78bfa"
@@ -48,6 +48,7 @@ export default function IssueCard({ issue, selected, onClick }: Props) {
   return (
     <button
       onClick={onClick}
+      className="issueCard"
       data-testid={`issue-card-${issue.id}`}
       style={{
         width: "100%",
@@ -74,6 +75,7 @@ export default function IssueCard({ issue, selected, onClick }: Props) {
         />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
+            data-testid={`issue-card-title-${issue.id}`}
             style={{
               fontSize: 13,
               fontWeight: 600,
@@ -87,6 +89,7 @@ export default function IssueCard({ issue, selected, onClick }: Props) {
           </div>
           <div style={{ display: "flex", gap: 6, marginTop: 4, flexWrap: "wrap" }}>
             <span
+              data-testid={`issue-card-origin-${issue.id}`}
               style={{
                 fontSize: 10,
                 padding: "1px 7px",
@@ -99,6 +102,7 @@ export default function IssueCard({ issue, selected, onClick }: Props) {
               {originBadge.label}
             </span>
             <span
+              data-testid={`issue-card-status-${issue.id}`}
               style={{
                 fontSize: 10,
                 padding: "1px 7px",
@@ -110,8 +114,9 @@ export default function IssueCard({ issue, selected, onClick }: Props) {
             >
               {fmtStatus(issue.status)}
             </span>
-            {!isImported && issue.origin === "manual" && issue.severity && (
+            {!isImported && issue.origin === "issue" && issue.severity && (
               <span
+                data-testid={`issue-card-severity-${issue.id}`}
                 style={{
                   fontSize: 10,
                   padding: "1px 7px",
@@ -126,6 +131,7 @@ export default function IssueCard({ issue, selected, onClick }: Props) {
             )}
             {issue.origin === "feature" && issue.severity && (
               <span
+                data-testid={`issue-card-priority-${issue.id}`}
                 style={{
                   fontSize: 10,
                   padding: "1px 7px",
@@ -140,6 +146,7 @@ export default function IssueCard({ issue, selected, onClick }: Props) {
             )}
             {issue.area && (
               <span
+                data-testid={`issue-card-area-${issue.id}`}
                 style={{
                   fontSize: 10,
                   padding: "1px 7px",
@@ -152,10 +159,16 @@ export default function IssueCard({ issue, selected, onClick }: Props) {
               </span>
             )}
             {isImported && issue.sourceRef && (
-              <span style={{ fontSize: 10, color: t.textFaint }}>{issue.sourceRef}</span>
-            )}
-            {issue.automationStatus && issue.origin === "manual" && (
               <span
+                data-testid={`issue-card-sourceref-${issue.id}`}
+                style={{ fontSize: 10, color: t.textFaint }}
+              >
+                {issue.sourceRef}
+              </span>
+            )}
+            {issue.automationStatus && issue.origin === "issue" && (
+              <span
+                data-testid={`issue-card-test-result-${issue.id}`}
                 style={{
                   fontSize: 10,
                   padding: "1px 7px",

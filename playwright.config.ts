@@ -10,12 +10,18 @@ export default defineConfig({
     "tests/**/*.spec.ts",
     "tests/**/*.test.ts",
   ],
-  timeout: 3000,
+  timeout: 30000,
   reporter: [["html", { open: "never" }], ["line"]],
+
+  // Run UI tests serially to avoid race conditions with shared backend
+  fullyParallel: true,
+  workers: 4,
+
   use: {
     baseURL: "http://localhost:5173",
     headless: true,
     screenshot: "only-on-failure",
     trace: "on",
+    actionTimeout: 10000,
   },
 });

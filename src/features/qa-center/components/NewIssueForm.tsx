@@ -7,10 +7,10 @@ import { useQACenterConfig } from "./QACenterConfigContext";
 
 type Props = { onClose: () => void; origin?: IssueOrigin };
 
-export default function NewIssueForm({ onClose, origin = "manual" }: Props) {
+export default function NewIssueForm({ onClose, origin = "issue" }: Props) {
   const { theme } = useTheme();
   const t = tokens[theme];
-  const { addIssue } = useQACenterStore();
+  const { addIssue, showToast } = useQACenterStore();
   const { baseUrl } = useQACenterConfig();
 
   // Shared
@@ -38,7 +38,7 @@ export default function NewIssueForm({ onClose, origin = "manual" }: Props) {
   const [noteContent, setNoteContent] = useState("");
 
   useEffect(() => {
-    if (origin === "manual") {
+    if (origin === "issue") {
       setLoadingTests(true);
       fetchAvailableTests(baseUrl)
         .then(setAvailableTests)
@@ -69,12 +69,12 @@ export default function NewIssueForm({ onClose, origin = "manual" }: Props) {
 
   const selectedTest = availableTests.find((t) => t.id === selectedTestId);
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!title.trim()) {
       setError("Title is required.");
       return;
     }
-    if (origin === "manual" && !description.trim()) {
+    if (origin === "issue" && !description.trim()) {
       setError("Description is required.");
       return;
     }
@@ -87,51 +87,59 @@ export default function NewIssueForm({ onClose, origin = "manual" }: Props) {
       return;
     }
 
+    setError("");
     const now = Date.now();
 
-    if (origin === "manual") {
-      addIssue(baseUrl, {
-        id: `issue-${now}-${Math.random().toString(36).slice(2, 6)}`,
-        origin: "manual",
-        title: title.trim(),
-        description: description.trim(),
-        status: "open",
-        severity,
-        area: area.trim() || undefined,
-        reproSteps: reproSteps.trim() || undefined,
-        expected: expected.trim() || undefined,
-        actual: actual.trim() || undefined,
-        linkedTest: selectedTest ? { ...selectedTest, tag: `@issue-${now}` } : undefined,
-        automationStatus: selectedTest
-          ? { result: "not_run", lastRun: null, message: "" }
-          : undefined,
-        createdAt: now,
-        updatedAt: now,
-      });
-    } else if (origin === "feature") {
-      addIssue(baseUrl, {
-        id: `issue-${now}-${Math.random().toString(36).slice(2, 6)}`,
-        origin: "feature",
-        title: title.trim(),
-        description: featureDescription.trim(),
-        status: "open",
-        severity: priority,
-        area: area.trim() || undefined,
-        notes: acceptanceCriteria.trim() || undefined,
-        createdAt: now,
-        updatedAt: now,
-      });
-    } else if (origin === "note") {
-      addIssue(baseUrl, {
-        id: `issue-${now}-${Math.random().toString(36).slice(2, 6)}`,
-        origin: "note",
-        title: title.trim(),
-        description: noteContent.trim(),
-        status: "open",
-        area: area.trim() || undefined,
-        createdAt: now,
-        updatedAt: now,
-      });
+    try {
+      if (origin === "issue") {
+        await addIssue(baseUrl, {
+          id: `issue-${now}-${Math.random().toString(36).slice(2, 6)}`,
+          origin: "issue",
+          title: title.trim(),
+          description: description.trim(),
+          status: "open",
+          severity,
+          area: area.trim() || undefined,
+          reproSteps: reproSteps.trim() || undefined,
+          expected: expected.trim() || undefined,
+          actual: actual.trim() || undefined,
+          linkedTest: selectedTest ? { ...selectedTest, tag: `@issue-${now}` } : undefined,
+          automationStatus: selectedTest
+            ? { result: "not_run", lastRun: null, message: "" }
+            : undefined,
+          createdAt: now,
+          updatedAt: now,
+        });
+        showToast(`"${title.trim()}" created successfully`);
+      } else if (origin === "feature") {
+        await addIssue(baseUrl, {
+          id: `issue-${now}-${Math.random().toString(36).slice(2, 6)}`,
+          origin: "feature",
+          title: title.trim(),
+          description: featureDescription.trim(),
+          status: "open",
+          severity: priority,
+          area: area.trim() || undefined,
+          notes: acceptanceCriteria.trim() || undefined,
+          createdAt: now,
+          updatedAt: now,
+        });
+        showToast(`"${title.trim()}" created successfully`);
+      } else if (origin === "note") {
+        await addIssue(baseUrl, {
+          id: `issue-${now}-${Math.random().toString(36).slice(2, 6)}`,
+          origin: "note",
+          title: title.trim(),
+          description: noteContent.trim(),
+          status: "open",
+          area: area.trim() || undefined,
+          createdAt: now,
+          updatedAt: now,
+        });
+        showToast(`"${title.trim()}" created successfully`);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to create item.");
     }
   }
 
@@ -190,6 +198,7 @@ export default function NewIssueForm({ onClose, origin = "manual" }: Props) {
 
         {error && (
           <div
+            data-testid="form-error-banner"
             style={{
               fontSize: 12,
               color: t.failText,
@@ -204,7 +213,7 @@ export default function NewIssueForm({ onClose, origin = "manual" }: Props) {
         )}
 
         {/* ── BUG / ISSUE FORM ── */}
-        {origin === "manual" && (
+        {origin === "issue" && (
           <>
             <div
               style={{
