@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import path from "path";
-import fs from "fs";
 import { fileURLToPath } from "url";
 import { issuesRouter } from "./routes/issues.js";
 import { testsRouter } from "./routes/tests.js";
@@ -10,7 +9,6 @@ import { statusRouter } from "./routes/status.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST = path.join(__dirname, "../dist");
-const distExists = fs.existsSync(path.join(DIST, "index.html"));
 
 /**
  * @param {{ cwd: string }} options
@@ -42,31 +40,31 @@ export function createServer({ cwd }) {
   });
 
   // API routes
-  app.use("/api/qa-issues", issuesRouter);
+  app.use("/api/qa-items", issuesRouter);
   app.use("/api/qa-tests", testsRouter);
-  app.use("/api/qa-issues", runTestRouter);
+  app.use("/api/qa-items", runTestRouter);
   app.use("/api/status", statusRouter);
 
-  // Always serve static assets from dist/ (includes oneko.gif, etc.)
-  app.use(express.static(DIST));
+  // Serve static assets that are genuinely needed (e.g. oneko.gif)
+  // but do NOT serve the React UI — port 3333 is API-only.
+  // The React UI runs on the Vite dev server (port 5173) or is embedded
+  // in the consumer's own app.
+  app.use("/public", express.static(DIST));
 
-  // Serve built React UI (only if dist/ exists)
-  if (distExists) {
-    app.get("*", (_req, res) => {
-      res.sendFile(path.join(DIST, "index.html"));
+  // Serve docs at root — visiting localhost:3333 shows the QA Center documentation
+  const DOCS = path.join(__dirname, "../docs");
+  app.get("/", (_req, res) => {
+    res.sendFile(path.join(DOCS, "index.html"));
+  });
+  app.use("/docs", express.static(DOCS));
+
+  // Catch-all: return a clean JSON response instead of the React app
+  app.use((_req, res) => {
+    res.status(404).json({
+      error: "Not found.",
+      hint: "This is the QA Center API server. Available routes: /api/qa-items, /api/qa-tests, /api/status",
     });
-  } else {
-    app.get("*", (_req, res) => {
-      res
-        .status(503)
-        .send(
-          `<pre style="font-family:monospace;padding:2rem">` +
-            `QA Center API is running.\n\n` +
-            `UI not built yet. Run:\n\n  npm run build\n\nThen restart the server.\n\n` +
-            `Or use the Vite dev server:\n  npm run dev  (in a separate terminal)</pre>`
-        );
-    });
-  }
+  });
 
   return app;
 }

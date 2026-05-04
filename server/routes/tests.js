@@ -26,23 +26,69 @@ function stableId(file, fullTitle) {
   return `test-${Math.abs(hash).toString(36)}`;
 }
 
+/**
+ * Extract a stable [id:xxx] tag from a test title if present.
+ * e.g. "[id:feat-001] Can Add Feature — Dark mode" → "feat-001"
+ */
+function extractTestId(title) {
+  const match = title.match(/\[id:([^\]]+)\]/);
+  return match ? match[1] : undefined;
+}
+
+/**
+ * Normalise a raw title string extracted from source:
+ * - Static strings  → returned as-is
+ * - Template literals with expressions → replace ${...} with a "*" wildcard
+ *   so DDT tests like `Can Add Feature — ${feature.name}` become
+ *   "Can Add Feature — *" and are still discoverable / linkable.
+ */
+function normaliseTitle(raw) {
+  // If the title contains a template expression, replace each ${...} with *
+  if (raw.includes("${")) {
+    return raw.replace(/\$\{[^}]*\}/g, "*").trim();
+  }
+  return raw.trim();
+}
+
 function extractTests(source, filePath) {
   const results = [];
   const lines = source.split("\n");
-  let currentDescribe;
+  const describeStack = []; // support nested describes
 
   for (const line of lines) {
-    const describeMatch = line.match(/(?:test\.describe|describe)\s*\(\s*["'`](.+?)["'`]/);
+    // Detect describe open — push onto stack
+    // Matches: test.describe("title", or describe("title",
+    const describeMatch = line.match(
+      /(?:test\.describe(?:\.only|\.skip)?|describe(?:\.only|\.skip)?)\s*\(\s*["'`](.+?)["'`]/
+    );
     if (describeMatch) {
-      currentDescribe = describeMatch[1];
+      describeStack.push(normaliseTitle(describeMatch[1]));
       continue;
     }
 
-    const testMatch = line.match(/^\s*(?:test|it)\s*(?:\.only|\.skip)?\s*\(\s*["'`](.+?)["'`]/);
+    // Detect describe close (rough heuristic — closing brace at low indent)
+    // This keeps nested describes working without a full AST parser
+    if (/^\s*\}\s*\)\s*;?\s*$/.test(line) && describeStack.length > 0) {
+      describeStack.pop();
+      continue;
+    }
+
+    // Detect test / it — static strings AND template literals
+    // Matches: test("title",  test(`title`,  test.only("title",  it("title",
+    const testMatch = line.match(/^\s*(?:test|it)\s*(?:\.only|\.skip)?\s*\(\s*(["'`])([\s\S]+?)\1/);
     if (testMatch) {
-      const testTitle = testMatch[1];
+      const rawTitle = testMatch[2];
+      const testTitle = normaliseTitle(rawTitle);
+      const currentDescribe =
+        describeStack.length > 0 ? describeStack[describeStack.length - 1] : undefined;
       const fullTitle = currentDescribe ? `${currentDescribe} > ${testTitle}` : testTitle;
-      results.push({ file: filePath, describe: currentDescribe, testTitle, fullTitle });
+      results.push({
+        file: filePath,
+        describe: currentDescribe,
+        testTitle,
+        fullTitle,
+        testId: extractTestId(testTitle),
+      });
     }
   }
   return results;

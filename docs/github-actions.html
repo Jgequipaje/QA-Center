@@ -1,0 +1,925 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GitHub Actions Guide — QA Center Docs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚙️</text></svg>"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      :root {
+        --bg: #09090b;
+        --bg-subtle: #111113;
+        --bg-muted: #18181b;
+        --border: #27272a;
+        --text: #fafafa;
+        --text-muted: #a1a1aa;
+        --text-faint: #52525b;
+        --accent: #7c3aed;
+        --accent-text: #ffffff;
+        --link: #a78bfa;
+        --code-bg: #18181b;
+        --code-border: #27272a;
+      }
+      [data-theme="light"] {
+        --bg: #ffffff;
+        --bg-subtle: #fafafa;
+        --bg-muted: #f4f4f5;
+        --border: #e4e4e7;
+        --text: #09090b;
+        --text-muted: #71717a;
+        --text-faint: #a1a1aa;
+        --accent: #7c3aed;
+        --accent-text: #ffffff;
+        --link: #7c3aed;
+        --code-bg: #f4f4f5;
+        --code-border: #e4e4e7;
+      }
+      html {
+        background: var(--bg);
+        color: var(--text);
+        scroll-behavior: smooth;
+      }
+      body {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 14px;
+        line-height: 1.7;
+      }
+      nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: var(--bg-subtle);
+        border-bottom: 1px solid var(--border);
+        padding: 0 24px;
+        height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .nav-logo {
+        font-weight: 700;
+        font-size: 15px;
+        color: var(--text);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .nav-logo span {
+        background: var(--accent);
+        color: var(--accent-text);
+        border-radius: 6px;
+        padding: 2px 8px;
+        font-size: 12px;
+      }
+      .nav-links {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+      }
+      .nav-links a {
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 12px;
+        padding: 5px 10px;
+        border-radius: 6px;
+        transition:
+          color 0.15s,
+          background 0.15s;
+      }
+      .nav-links a:hover {
+        color: var(--text);
+        background: var(--bg-muted);
+      }
+      #theme-toggle {
+        background: none;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        border-radius: 6px;
+        padding: 4px 10px;
+        font-size: 12px;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      #theme-toggle:hover {
+        color: var(--text);
+        border-color: var(--text-muted);
+      }
+      .page {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 0 24px 80px;
+      }
+      .hero {
+        padding: 72px 0 56px;
+        text-align: center;
+      }
+      .hero h1 {
+        font-size: clamp(28px, 5vw, 44px);
+        font-weight: 700;
+        line-height: 1.2;
+        margin-bottom: 16px;
+      }
+      .hero h1 em {
+        font-style: normal;
+        color: var(--accent);
+      }
+      .hero p {
+        font-size: 15px;
+        color: var(--text-muted);
+        max-width: 520px;
+        margin: 0 auto 32px;
+      }
+      .badge {
+        display: inline-block;
+        background: var(--bg-muted);
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 99px;
+        margin-bottom: 20px;
+      }
+      .hero-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .btn {
+        display: inline-block;
+        padding: 9px 20px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        font-family: inherit;
+        cursor: pointer;
+        border: none;
+        transition: opacity 0.15s;
+      }
+      .btn:hover {
+        opacity: 0.85;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: var(--accent-text);
+      }
+      .btn-outline {
+        background: none;
+        border: 1px solid var(--border);
+        color: var(--text);
+      }
+      section {
+        padding: 56px 0;
+        border-top: 1px solid var(--border);
+      }
+      .section-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 10px;
+      }
+      h2 {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 12px;
+      }
+      h3 {
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: var(--text);
+      }
+      p {
+        color: var(--text-muted);
+        margin-bottom: 16px;
+      }
+      p:last-child {
+        margin-bottom: 0;
+      }
+      pre {
+        background: var(--code-bg);
+        border: 1px solid var(--code-border);
+        border-radius: 8px;
+        padding: 16px 20px;
+        overflow-x: auto;
+        font-size: 13px;
+        line-height: 1.6;
+        margin: 16px 0;
+        position: relative;
+      }
+      code {
+        font-family: "JetBrains Mono", monospace;
+      }
+      .inline-code {
+        background: var(--code-bg);
+        border: 1px solid var(--code-border);
+        border-radius: 4px;
+        padding: 1px 6px;
+        font-size: 12px;
+        color: var(--link);
+      }
+      .copy-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: var(--bg-muted);
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        border-radius: 5px;
+        padding: 3px 9px;
+        font-size: 11px;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .copy-btn:hover {
+        color: var(--text);
+      }
+      .callout {
+        background: #1e1030;
+        border: 1px solid #4c1d95;
+        border-radius: 8px;
+        padding: 14px 18px;
+        margin: 20px 0;
+        font-size: 13px;
+        color: #a78bfa;
+      }
+      [data-theme="light"] .callout {
+        background: #ede9fe;
+        border-color: #c4b5fd;
+        color: #6d28d9;
+      }
+      .callout-warn {
+        background: #1c1400;
+        border: 1px solid #78350f;
+        border-radius: 8px;
+        padding: 14px 18px;
+        margin: 20px 0;
+        font-size: 13px;
+        color: #fbbf24;
+      }
+      [data-theme="light"] .callout-warn {
+        background: #fffbeb;
+        border-color: #fcd34d;
+        color: #92400e;
+      }
+      .table-wrap {
+        overflow-x: auto;
+        margin-top: 20px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      th {
+        text-align: left;
+        padding: 8px 12px;
+        color: var(--text-faint);
+        font-weight: 600;
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+      }
+      td {
+        padding: 9px 12px;
+        border-bottom: 1px solid var(--border);
+        color: var(--text-muted);
+        vertical-align: top;
+      }
+      td:first-child {
+        color: var(--link);
+        white-space: nowrap;
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      .flow {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin: 20px 0;
+      }
+      .flow-box {
+        background: var(--bg-subtle);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 6px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text);
+      }
+      .flow-arrow {
+        color: var(--text-faint);
+        font-size: 12px;
+      }
+      .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 16px;
+        margin-top: 24px;
+      }
+      .card {
+        background: var(--bg-subtle);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 18px 20px;
+      }
+      .card-icon {
+        font-size: 20px;
+        margin-bottom: 10px;
+      }
+      .card h3 {
+        font-size: 13px;
+        margin-bottom: 6px;
+      }
+      .card p {
+        font-size: 12px;
+        margin: 0;
+      }
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 32px 24px;
+        text-align: center;
+        font-size: 12px;
+        color: var(--text-faint);
+        line-height: 2;
+      }
+      footer a {
+        color: var(--link);
+        text-decoration: none;
+      }
+      footer a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <a class="nav-logo" href="index.html"><span>QA Center</span> GitHub Actions Guide</a>
+      <div class="nav-links">
+        <a href="#anatomy">Anatomy</a>
+        <a href="#triggers">Triggers</a>
+        <a href="#jobs">Jobs</a>
+        <a href="#tips">Tips</a>
+        <a href="#templates">Templates</a>
+        <a href="index.html">&#x2190; Docs</a>
+        <button id="theme-toggle">&#x2600; Light</button>
+      </div>
+    </nav>
+
+    <div class="page">
+      <!-- HERO -->
+      <div class="hero">
+        <div class="badge">Reference Guide</div>
+        <h1>GitHub Actions<br /><em>from scratch</em></h1>
+        <p>
+          A practical reference for writing your own workflows — based on real examples from this
+          project.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#anatomy">Start learning</a>
+          <a class="btn btn-outline" href="#templates">Jump to templates</a>
+        </div>
+      </div>
+
+      <!-- HOW IT WORKS -->
+      <section id="how">
+        <div class="section-label">Overview</div>
+        <h2>How it works</h2>
+        <p>GitHub Actions runs automated tasks when something happens in your repo.</p>
+        <div class="flow">
+          <div class="flow-box">&#x1F4E5; Event</div>
+          <span class="flow-arrow">&#x2192;</span>
+          <div class="flow-box">&#x1F4C4; Workflow</div>
+          <span class="flow-arrow">&#x2192;</span>
+          <div class="flow-box">&#x2699;&#xFE0F; Jobs</div>
+          <span class="flow-arrow">&#x2192;</span>
+          <div class="flow-box">&#x1F9F1; Steps</div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-icon">&#x1F4E5;</div>
+            <h3>Event</h3>
+            <p>What triggers the workflow — push, pull request, manual click, or a schedule.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">&#x1F4C4;</div>
+            <h3>Workflow</h3>
+            <p>
+              A <span class="inline-code">.yml</span> file inside
+              <span class="inline-code">.github/workflows/</span>. One file = one workflow.
+            </p>
+          </div>
+          <div class="card">
+            <div class="card-icon">&#x2699;&#xFE0F;</div>
+            <h3>Job</h3>
+            <p>A group of steps that run on a machine (runner). Jobs run in parallel by default.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">&#x1F9F1;</div>
+            <h3>Step</h3>
+            <p>
+              A single command (<span class="inline-code">run:</span>) or a pre-built action (<span
+                class="inline-code"
+                >uses:</span
+              >).
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ANATOMY -->
+      <section id="anatomy">
+        <div class="section-label">Structure</div>
+        <h2>Anatomy of a workflow file</h2>
+        <p>Every workflow follows this structure. Comments explain each part.</p>
+        <pre><code>name: My Workflow          # Name shown in GitHub Actions UI
+
+on:                        # What triggers this workflow
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  my-job:                  # Job ID — used in needs: and branch protection
+    name: My Job           # Display name (optional)
+    runs-on: ubuntu-latest # Runner OS
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4   # Clone the repo
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm                # Cache node_modules for speed
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run build
+        run: npm run build</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
+      </section>
+
+      <!-- TRIGGERS -->
+      <section id="triggers">
+        <div class="section-label">Triggers</div>
+        <h2>on: — what starts your workflow</h2>
+        <pre><code>on:
+  push:                          # Every push to these branches
+    branches: [main, development]
+
+  pull_request:                  # PR opened or updated
+    branches: [main]
+
+  workflow_dispatch:             # Manual trigger from GitHub UI
+
+  schedule:
+    - cron: "0 9 * * 1"         # Every Monday at 9am UTC</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
+        <div class="callout">
+          &#x1F4A1; Cron syntax: <span class="inline-code">minute hour day month weekday</span>. Use
+          <a href="https://crontab.guru" target="_blank" style="color: var(--link)">crontab.guru</a>
+          to build cron expressions.
+        </div>
+      </section>
+
+      <!-- RUNNERS -->
+      <section id="runners">
+        <div class="section-label">Runners</div>
+        <h2>runs-on: — where your job runs</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Value</th>
+                <th>OS</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>ubuntu-latest</td>
+                <td>Linux</td>
+                <td>Fastest, most common, recommended default</td>
+              </tr>
+              <tr>
+                <td>windows-latest</td>
+                <td>Windows</td>
+                <td>Use when testing Windows-specific behavior</td>
+              </tr>
+              <tr>
+                <td>macos-latest</td>
+                <td>macOS</td>
+                <td>Slowest, use only when needed</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- COMMON ACTIONS -->
+      <section id="actions">
+        <div class="section-label">Common Actions</div>
+        <h2>uses: — pre-built steps</h2>
+        <p>
+          Actions are reusable steps from the GitHub Marketplace. These are the ones you'll use
+          most.
+        </p>
+        <pre><code># Checkout your repo (always first)
+- uses: actions/checkout@v4
+
+# Setup Node.js with caching
+- uses: actions/setup-node@v4
+  with:
+    node-version: lts/*
+    cache: npm
+
+# Upload files as artifacts (test reports, build output)
+- uses: actions/upload-artifact@v4
+  with:
+    name: playwright-report
+    path: playwright-report/
+    retention-days: 30
+
+# Download a previously uploaded artifact
+- uses: actions/download-artifact@v4
+  with:
+    name: playwright-report</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
+      </section>
+
+      <!-- JOBS -->
+      <section id="jobs">
+        <div class="section-label">Jobs</div>
+        <h2>Job dependencies with needs:</h2>
+        <p>
+          By default jobs run in parallel. Use <span class="inline-code">needs:</span> to chain them
+          sequentially.
+        </p>
+        <pre><code>jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps: [...]
+
+  build:
+    needs: lint              # Only runs if lint passes
+    runs-on: ubuntu-latest
+    steps: [...]
+
+  deploy:
+    needs: [lint, build]     # Waits for both to pass
+    runs-on: ubuntu-latest
+    steps: [...]</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
+        <div class="callout">
+          &#x26A0;&#xFE0F; The job <strong>key</strong> (e.g.
+          <span class="inline-code">lint:</span>) is what GitHub uses for branch protection status
+          checks — not the <span class="inline-code">name:</span> field. Make sure they match what
+          you add in Settings &#x2192; Branches.
+        </div>
+      </section>
+
+      <!-- ENV AND SECRETS -->
+      <section id="secrets">
+        <div class="section-label">Environment &amp; Secrets</div>
+        <h2>Variables and secrets</h2>
+        <pre><code>jobs:
+  my-job:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: production        # Job-level env var
+
+    steps:
+      - name: Use a secret
+        run: npm run deploy
+        env:
+          API_KEY: ${{ secrets.API_KEY }}   # From GitHub Secrets</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
+        <p>
+          Store secrets in
+          <strong>GitHub &#x2192; Settings &#x2192; Secrets and variables &#x2192; Actions</strong>.
+          Never hardcode them in workflow files.
+        </p>
+        <div class="callout-warn">
+          &#x1F512; GitHub automatically masks secret values in logs — they'll appear as
+          <span class="inline-code">***</span>.
+        </div>
+      </section>
+
+      <!-- CONDITIONALS -->
+      <section id="conditionals">
+        <div class="section-label">Conditionals</div>
+        <h2>if: — run steps conditionally</h2>
+        <pre><code># Always run (even if previous steps failed)
+- name: Upload report
+  if: always()
+  uses: actions/upload-artifact@v4
+  with:
+    name: report
+    path: report/
+
+# Only on main branch
+- name: Deploy
+  if: github.ref == 'refs/heads/main'
+  run: npm run deploy
+
+# Only if something failed
+- name: Notify on failure
+  if: failure()
+  run: echo "Something went wrong"</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
+      </section>
+
+      <!-- BACKGROUND SERVERS -->
+      <section id="servers">
+        <div class="section-label">Background Processes</div>
+        <h2>Running servers for E2E tests</h2>
+        <p>
+          Use <span class="inline-code">&amp;</span> to run a process in the background, then
+          <span class="inline-code">wait-on</span> to wait until it's ready.
+        </p>
+        <pre><code>- name: Start dev server
+  run: npm run dev &
+  env:
+    CI: true
+
+- name: Wait for dev server
+  run: npx wait-on http://localhost:5173 --timeout 30000
+
+- name: Start API server
+  run: npm run server &
+
+- name: Wait for API server
+  run: npx wait-on http://localhost:3333 --timeout 30000
+
+- name: Run Playwright tests
+  run: npx playwright test</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
+        <div class="callout">
+          &#x1F4A1; <span class="inline-code">wait-on</span> polls the URL until it responds or
+          times out. Always set a timeout so the job doesn't hang forever.
+        </div>
+      </section>
+
+      <!-- TIPS -->
+      <section id="tips">
+        <div class="section-label">Tips</div>
+        <h2>Things worth knowing</h2>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-icon">&#x26A1;</div>
+            <h3>npm ci vs npm install</h3>
+            <p>
+              Always use <span class="inline-code">npm ci</span> in CI. It's faster, uses the
+              lockfile exactly, and fails if the lockfile is out of sync.
+            </p>
+          </div>
+          <div class="card">
+            <div class="card-icon">&#x1F4BE;</div>
+            <h3>Cache node_modules</h3>
+            <p>
+              Add <span class="inline-code">cache: npm</span> to
+              <span class="inline-code">setup-node</span> to cache dependencies between runs. Saves
+              30–60s per job.
+            </p>
+          </div>
+          <div class="card">
+            <div class="card-icon">&#x23F1;&#xFE0F;</div>
+            <h3>Set timeout-minutes</h3>
+            <p>
+              Always set this on long-running jobs like Playwright. Prevents stuck workflows from
+              eating your free minutes.
+            </p>
+          </div>
+          <div class="card">
+            <div class="card-icon">&#x1F4CA;</div>
+            <h3>Upload artifacts on failure</h3>
+            <p>
+              Use <span class="inline-code">if: always()</span> on artifact uploads so you get test
+              reports even when tests fail.
+            </p>
+          </div>
+          <div class="card">
+            <div class="card-icon">&#x1F513;</div>
+            <h3>Public repos = free</h3>
+            <p>
+              Public repos get unlimited Actions minutes. Private repos get 2,000 min/month on the
+              free plan.
+            </p>
+          </div>
+          <div class="card">
+            <div class="card-icon">&#x1F511;</div>
+            <h3>Job key = check name</h3>
+            <p>
+              Branch protection uses the job key (e.g. <span class="inline-code">lint:</span>), not
+              the display <span class="inline-code">name:</span>. Keep them consistent.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- TEMPLATES -->
+      <section id="templates">
+        <div class="section-label">Starter Templates</div>
+        <h2>Copy-paste and go</h2>
+
+        <h3 style="margin-top: 28px">1. Minimal CI (lint + build)</h3>
+        <p>The simplest useful workflow — runs on every push and PR.</p>
+        <pre><code>name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
+
+        <h3 style="margin-top: 36px">2. Full CI Pipeline (this project's setup)</h3>
+        <p>Sequential jobs — each one only runs if the previous passes.</p>
+        <pre><code>name: CI Pipeline
+
+on:
+  push:
+    branches: [main, development]
+  pull_request:
+    branches: [main, development]
+
+jobs:
+  prettier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci --legacy-peer-deps
+      - run: npx prettier --check .
+
+  lint:
+    needs: prettier
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci --legacy-peer-deps
+      - run: npm run lint
+
+  typecheck:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci --legacy-peer-deps
+      - run: npm run typecheck
+
+  build:
+    needs: typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci --legacy-peer-deps
+      - run: npm run build</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
+
+        <h3 style="margin-top: 36px">3. Playwright E2E</h3>
+        <p>Starts both servers, waits for them, runs tests, uploads the report.</p>
+        <pre><code>name: Playwright Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  playwright:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci --legacy-peer-deps
+      - run: npx playwright install --with-deps
+      - name: Start app
+        run: npm run dev &
+      - name: Wait for app
+        run: npx wait-on http://localhost:5173 --timeout 30000
+      - name: Start API server
+        run: npm run server &
+      - name: Wait for API server
+        run: npx wait-on http://localhost:3333 --timeout 30000
+      - run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
+
+        <h3 style="margin-top: 36px">4. Scheduled Nightly Run</h3>
+        <p>Runs automatically every night at midnight UTC.</p>
+        <pre><code>name: Nightly Tests
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps
+      - run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nightly-report
+          path: playwright-report/
+          retention-days: 7</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
+      </section>
+    </div>
+
+    <footer>
+      <div>QA Center &mdash; GitHub Actions Guide</div>
+      <div>
+        <a href="index.html">&#x2190; Back to Docs</a> &middot;
+        <a href="https://docs.github.com/en/actions" target="_blank"
+          >GitHub Actions Docs &#x2197;</a
+        >
+      </div>
+    </footer>
+
+    <script>
+      const toggle = document.getElementById("theme-toggle");
+      const html = document.documentElement;
+      const saved = localStorage.getItem("theme");
+      if (saved) {
+        html.setAttribute("data-theme", saved);
+        toggle.textContent = saved === "dark" ? "☀ Light" : "☾ Dark";
+      }
+      toggle.addEventListener("click", () => {
+        const next = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        html.setAttribute("data-theme", next);
+        localStorage.setItem("theme", next);
+        toggle.textContent = next === "dark" ? "☀ Light" : "☾ Dark";
+      });
+      function copy(btn) {
+        const code = btn.parentElement.querySelector("code").innerText;
+        navigator.clipboard.writeText(code).then(() => {
+          btn.textContent = "copied!";
+          setTimeout(() => (btn.textContent = "copy"), 1500);
+        });
+      }
+    </script>
+  </body>
+</html>

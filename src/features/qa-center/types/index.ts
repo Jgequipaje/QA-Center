@@ -1,6 +1,6 @@
 export type IssueStatus = "open" | "in_progress" | "ready_for_qa" | "verified" | "closed";
 export type IssueSeverity = "critical" | "high" | "medium" | "low" | "info";
-export type IssueOrigin = "manual" | "imported_markdown" | "feature" | "note";
+export type IssueOrigin = "issue" | "imported_markdown" | "feature" | "note";
 export type AutomationResult = "not_run" | "passed" | "failed";
 
 export type LinkedTest = {
@@ -9,7 +9,8 @@ export type LinkedTest = {
   describe?: string;
   testTitle: string;
   fullTitle: string;
-  tag?: string; // e.g. "@issue-abc123" — used for reliable grep
+  tag?: string; // legacy: "@issue-abc123" grep tag
+  testId?: string; // stable DDT id extracted from [id:xxx] in title
 };
 
 export type AutomationStatus = {
@@ -45,6 +46,7 @@ export type AvailableTest = {
   describe?: string;
   testTitle: string;
   fullTitle: string;
+  testId?: string; // stable [id:xxx] extracted from title, if present
 };
 
 export type IssueFilters = {

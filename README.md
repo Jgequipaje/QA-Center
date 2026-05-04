@@ -89,6 +89,8 @@ Issues are saved to `qa-issues.json` in the directory where you run the command 
 > npx qa-center --data-dir ../qa-data
 > ```
 
+> **After upgrading QA Center:** always run `npm run build` before restarting the server. The Express backend serves the compiled `dist/` bundle — skipping the build means the old bundle still calls previous API routes, causing 404 errors. If you're using the Vite dev server (`npm run dev`), just restart Vite — it reads from source directly and no build step is needed.
+
 ---
 
 ## Features
@@ -109,13 +111,14 @@ All endpoints are served by the Express backend on `http://localhost:<port>`.
 
 ### Issues
 
-| Method   | Route                         | Description                            |
-| -------- | ----------------------------- | -------------------------------------- |
-| `GET`    | `/api/qa-issues`              | Return all issues, sorted newest first |
-| `POST`   | `/api/qa-issues`              | Create a new issue                     |
-| `PATCH`  | `/api/qa-issues/:id`          | Update issue fields or status          |
-| `DELETE` | `/api/qa-issues/:id`          | Delete an issue                        |
-| `POST`   | `/api/qa-issues/:id/run-test` | Run the linked Playwright test         |
+| Method   | Route                        | Description                           |
+| -------- | ---------------------------- | ------------------------------------- |
+| `GET`    | `/api/qa-items`              | Return all items, sorted newest first |
+| `GET`    | `/api/qa-items/:id`          | Return a single item by ID            |
+| `POST`   | `/api/qa-items`              | Create a new item                     |
+| `PATCH`  | `/api/qa-items/:id`          | Update item fields or status          |
+| `DELETE` | `/api/qa-items/:id`          | Delete an item                        |
+| `POST`   | `/api/qa-items/:id/run-test` | Run the linked Playwright test        |
 
 ### Tests
 
@@ -130,12 +133,12 @@ All endpoints are served by the Express backend on `http://localhost:<port>`.
 | ------ | ------------- | --------------------------------------------- |
 | `GET`  | `/api/status` | Server health, issue summary, test cache info |
 
-#### POST /api/qa-issues — body
+#### POST /api/qa-items — body
 
 ```json
 {
   "title": "Bug title",
-  "origin": "manual",
+  "origin": "issue",
   "status": "open",
   "severity": "high",
   "area": "Auth",
@@ -147,7 +150,7 @@ All endpoints are served by the Express backend on `http://localhost:<port>`.
 }
 ```
 
-#### PATCH /api/qa-issues/:id — body
+#### PATCH /api/qa-items/:id — body
 
 ```json
 {
@@ -160,7 +163,7 @@ Valid `status` values: `open` `in_progress` `ready_for_qa` `verified` `closed`
 
 Valid `severity` values: `critical` `high` `medium` `low` `info`
 
-Valid `origin` values: `manual` `feature` `note` `imported_markdown`
+Valid `origin` values: `issue` `feature` `note` `imported_markdown`
 
 ```bash
 git clone https://github.com/Jgequipaje/qa-center

@@ -84,7 +84,8 @@ function Badge({ label, color, bg }: { label: string; color: string; bg: string 
 export default function IssueDetail({ issue, onClose }: Props) {
   const { theme } = useTheme();
   const t = tokens[theme];
-  const { updateIssueStatus, updateIssue, saveIssue, deleteIssue, loadIssues } = useQACenterStore();
+  const { updateIssueStatus, updateIssue, saveIssue, deleteIssue, loadIssues, showToast } =
+    useQACenterStore();
   const { baseUrl } = useQACenterConfig();
   const [running, setRunning] = useState(false);
   const [runError, setRunError] = useState<string | null>(null);
@@ -101,6 +102,7 @@ export default function IssueDetail({ issue, onClose }: Props) {
   const [actual, setActual] = useState(issue.actual ?? "");
   const [notes, setNotes] = useState(issue.notes ?? "");
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -134,17 +136,17 @@ export default function IssueDetail({ issue, onClose }: Props) {
     origin === "note" ? NOTE_LABELS : origin === "feature" ? FEATURE_LABELS : BUG_LABELS;
   const available = transitionMap[issue.status] ?? [];
   const autoResult = issue.automationStatus?.result ?? "not_run";
-  const hasLinkedTest = !!issue.linkedTest && origin === "manual";
+  const hasLinkedTest = !!issue.linkedTest && origin === "issue";
 
   function canTransitionTo(to: IssueStatus) {
     if (to !== "verified") return true;
-    if (origin !== "manual") return true; // features/notes don't need a linked test
+    if (origin !== "issue") return true; // features/notes don't need a linked test
     if (!hasLinkedTest) return true; // no linked test = no gating
     return autoResult === "passed"; // has a linked test — it must have passed
   }
 
   function blockReason(to: IssueStatus): string | null {
-    if (to !== "verified" || origin !== "manual") return null;
+    if (to !== "verified" || origin !== "issue") return null;
     if (!hasLinkedTest) return null;
     if (autoResult !== "passed")
       return "The linked test must pass before this issue can be marked verified.";
@@ -172,20 +174,30 @@ export default function IssueDetail({ issue, onClose }: Props) {
 
   async function handleSave() {
     if (!title.trim()) return;
+    if (!window.confirm(`Save changes to "${title.trim()}"?`)) return;
     setSaving(true);
-    await saveIssue(baseUrl, issue.id, {
-      title: title.trim(),
-      description: description.trim() || undefined,
-      severity,
-      area: area.trim() || undefined,
-      reproSteps: reproSteps.trim() || undefined,
-      expected: expected.trim() || undefined,
-      actual: actual.trim() || undefined,
-      notes: notes.trim() || undefined,
-    });
-    if (mountedRef.current) {
-      setSaving(false);
-      setEditing(false);
+    setSaveError(null);
+    try {
+      await saveIssue(baseUrl, issue.id, {
+        title: title.trim(),
+        description: description.trim() || undefined,
+        severity,
+        area: area.trim() || undefined,
+        reproSteps: reproSteps.trim() || undefined,
+        expected: expected.trim() || undefined,
+        actual: actual.trim() || undefined,
+        notes: notes.trim() || undefined,
+      });
+      if (mountedRef.current) {
+        setSaving(false);
+        setEditing(false);
+        showToast(`"${title.trim()}" updated successfully`);
+      }
+    } catch (e) {
+      if (mountedRef.current) {
+        setSaving(false);
+        setSaveError(e instanceof Error ? e.message : "Failed to save. Please try again.");
+      }
     }
   }
 
@@ -198,6 +210,7 @@ export default function IssueDetail({ issue, onClose }: Props) {
     setExpected(issue.expected ?? "");
     setActual(issue.actual ?? "");
     setNotes(issue.notes ?? "");
+    setSaveError(null);
     setEditing(false);
   }
 
@@ -333,7 +346,7 @@ export default function IssueDetail({ issue, onClose }: Props) {
                 data-testid="detail-description"
               />
             </div>
-            {origin === "manual" && (
+            {origin === "issue" && (
               <>
                 <div>
                   <label style={labelStyle}>Repro Steps</label>
@@ -451,7 +464,12 @@ export default function IssueDetail({ issue, onClose }: Props) {
                   </pre>
                 )}
                 {runError && (
-                  <div style={{ fontSize: 11, color: t.failText, marginTop: 4 }}>{runError}</div>
+                  <div
+                    data-testid="detail-run-error"
+                    style={{ fontSize: 11, color: t.failText, marginTop: 4 }}
+                  >
+                    {runError}
+                  </div>
                 )}
                 {running && (
                   <div style={{ fontSize: 11, color: t.infoText, marginTop: 4 }}>
@@ -575,6 +593,23 @@ export default function IssueDetail({ issue, onClose }: Props) {
       >
         {editing ? (
           <>
+            {saveError && (
+              <div
+                data-testid="detail-save-error"
+                style={{
+                  width: "100%",
+                  fontSize: 12,
+                  color: t.failText,
+                  background: t.failBg,
+                  border: `1px solid ${t.failText}`,
+                  borderRadius: 6,
+                  padding: "6px 10px",
+                  marginBottom: 2,
+                }}
+              >
+                {saveError}
+              </div>
+            )}
             <button
               onClick={handleSave}
               disabled={saving || !title.trim()}
@@ -680,13 +715,19 @@ export default function IssueDetail({ issue, onClose }: Props) {
               );
             })}
             {available.includes("verified") && !canTransitionTo("verified") && (
-              <div style={{ width: "100%", fontSize: 11, color: t.warnText, marginTop: 2 }}>
+              <div
+                data-testid="detail-verify-blocked-msg"
+                style={{ width: "100%", fontSize: 11, color: t.warnText, marginTop: 2 }}
+              >
                 {blockReason("verified")}
               </div>
             )}
             <button
               onClick={() => {
+                if (!window.confirm(`Delete "${issue.title}"? This cannot be undone.`)) return;
+                const deletedTitle = issue.title;
                 deleteIssue(baseUrl, issue.id);
+                showToast(`"${deletedTitle}" deleted`);
                 onClose();
               }}
               data-testid="detail-delete"

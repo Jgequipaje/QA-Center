@@ -7,7 +7,7 @@ export const issuesRouter = Router();
 
 const VALID_STATUSES = new Set(["open", "in_progress", "ready_for_qa", "verified", "closed"]);
 const VALID_SEVERITIES = new Set(["critical", "high", "medium", "low", "info"]);
-const VALID_ORIGINS = new Set(["manual", "imported_markdown", "feature", "note"]);
+const VALID_ORIGINS = new Set(["issue", "imported_markdown", "feature", "note"]);
 const FIELD_MAX = 10000; // max chars for long text fields
 const TITLE_MAX = 500;
 
@@ -44,13 +44,28 @@ function validateTextField(value, name, max = FIELD_MAX) {
   return null;
 }
 
-// GET /api/qa-issues
+// GET /api/qa-items
+// Supports optional query filters: ?origin=issue|imported_markdown|feature|note
+//                                  ?status=open|in_progress|ready_for_qa|verified|closed
 issuesRouter.get("/", async (req, res) => {
-  const issues = await readIssues(req.appCwd);
+  const { origin, status } = req.query;
+
+  if (origin && !VALID_ORIGINS.has(origin)) {
+    return res.status(400).json({ error: "Invalid origin filter value." });
+  }
+  if (status && !VALID_STATUSES.has(status)) {
+    return res.status(400).json({ error: "Invalid status filter value." });
+  }
+
+  let issues = await readIssues(req.appCwd);
+
+  if (origin) issues = issues.filter((i) => i.origin === origin);
+  if (status) issues = issues.filter((i) => i.status === status);
+
   res.json(issues.sort((a, b) => b.createdAt - a.createdAt));
 });
 
-// POST /api/qa-issues
+// POST /api/qa-items
 issuesRouter.post("/", async (req, res) => {
   const body = req.body;
   if (!body?.title?.trim()) {
@@ -83,10 +98,23 @@ issuesRouter.post("/", async (req, res) => {
   }
 
   const issues = await readIssues(req.appCwd);
+
+  // Enforce unique title within the same origin/category
+  const duplicate = issues.find(
+    (i) =>
+      i.origin === (body.origin ?? "issue") &&
+      i.title?.trim().toLowerCase() === body.title.trim().toLowerCase()
+  );
+  if (duplicate) {
+    return res.status(409).json({
+      error: `"${body.title.trim()}" already exists in this category. Title must be unique.`,
+    });
+  }
+
   const now = Date.now();
   const newIssue = {
     id: `issue-${now}-${randomUUID().slice(0, 8)}`,
-    origin: body.origin ?? "manual",
+    origin: body.origin ?? "issue",
     title: body.title.trim(),
     status: body.status ?? "open",
     createdAt: now,
@@ -108,7 +136,16 @@ issuesRouter.post("/", async (req, res) => {
   res.status(201).json(newIssue);
 });
 
-// PATCH /api/qa-issues/:id
+// GET /api/qa-items/:id
+issuesRouter.get("/:id", async (req, res) => {
+  const { id } = req.params;
+  const issues = await readIssues(req.appCwd);
+  const issue = issues.find((i) => i.id === id);
+  if (!issue) return res.status(404).json({ error: "Not found." });
+  res.json(issue);
+});
+
+// PATCH /api/qa-items/:id
 issuesRouter.patch("/:id", async (req, res) => {
   const { id } = req.params;
   const body = req.body;
@@ -124,6 +161,22 @@ issuesRouter.patch("/:id", async (req, res) => {
   }
   if (body.title !== undefined && (!body.title.trim() || body.title.length > TITLE_MAX)) {
     return res.status(400).json({ error: "Invalid title." });
+  }
+
+  // Enforce unique title within the same origin/category (excluding the item being edited)
+  if (body.title !== undefined) {
+    const currentItem = issues[idx];
+    const duplicate = issues.find(
+      (i) =>
+        i.id !== id &&
+        i.origin === currentItem.origin &&
+        i.title?.trim().toLowerCase() === body.title.trim().toLowerCase()
+    );
+    if (duplicate) {
+      return res.status(409).json({
+        error: `"${body.title.trim()}" already exists in this category. Title must be unique.`,
+      });
+    }
   }
 
   const ALLOWED = [
@@ -152,14 +205,26 @@ issuesRouter.patch("/:id", async (req, res) => {
   res.json(issues[idx]);
 });
 
-// DELETE /api/qa-issues/:id
+// DELETE /api/qa-items/:id
 issuesRouter.delete("/:id", async (req, res) => {
   const { id } = req.params;
   const issues = await readIssues(req.appCwd);
-  const filtered = issues.filter((i) => i.id !== id);
-  if (filtered.length === issues.length) {
+  const deletedItem = issues.find((i) => i.id === id);
+
+  if (!deletedItem) {
     return res.status(404).json({ error: "Not found." });
   }
+
+  const filtered = issues.filter((i) => i.id !== id);
   await writeIssues(req.appCwd, filtered);
-  res.json({ ok: true });
+
+  res.json({
+    success: true,
+    message: "Item deleted successfully.",
+    deleted: {
+      id: deletedItem.id,
+      title: deletedItem.title,
+      origin: deletedItem.origin,
+    },
+  });
 });

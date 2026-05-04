@@ -430,6 +430,7 @@
         <a href="#props">Props</a>
         <a href="#workflow">Workflow</a>
         <a href="#cli">CLI</a>
+        <a href="#ddt">DDT</a>
         <button id="theme-toggle">&#x2600; Light</button>
       </div>
     </nav>
@@ -811,6 +812,15 @@ npx qa-center --data-dir ./qa-data      # store data outside Vite watch scope</c
           project root.
         </div>
 
+        <div class="callout">
+          &#x1F4A1; <strong>After upgrading QA Center</strong>, always run
+          <span class="inline-code">npm run build</span> before restarting the server. The Express
+          backend serves the compiled <span class="inline-code">dist/</span> bundle — if you skip
+          the build, the old bundle will still call the previous API routes and you'll see 404
+          errors. If you're using the Vite dev server (<span class="inline-code">npm run dev</span
+          >), just restart Vite — it reads from source directly and no build step is needed.
+        </div>
+
         <h3 style="margin-top: 32px">API Endpoints</h3>
         <p>
           All endpoints are served at <span class="inline-code">http://localhost:3333</span> (or
@@ -830,27 +840,32 @@ npx qa-center --data-dir ./qa-data      # store data outside Vite watch scope</c
             <tbody>
               <tr>
                 <td>GET</td>
-                <td>/api/qa-issues</td>
-                <td>Return all issues, newest first</td>
+                <td>/api/qa-items</td>
+                <td>Return all items, newest first</td>
+              </tr>
+              <tr>
+                <td>GET</td>
+                <td>/api/qa-items/:id</td>
+                <td>Return a single item by ID</td>
               </tr>
               <tr>
                 <td>POST</td>
-                <td>/api/qa-issues</td>
-                <td>Create a new issue</td>
+                <td>/api/qa-items</td>
+                <td>Create a new item</td>
               </tr>
               <tr>
                 <td>PATCH</td>
-                <td>/api/qa-issues/:id</td>
-                <td>Update issue fields or status</td>
+                <td>/api/qa-items/:id</td>
+                <td>Update item fields or status</td>
               </tr>
               <tr>
                 <td>DELETE</td>
-                <td>/api/qa-issues/:id</td>
-                <td>Delete an issue</td>
+                <td>/api/qa-items/:id</td>
+                <td>Delete an item</td>
               </tr>
               <tr>
                 <td>POST</td>
-                <td>/api/qa-issues/:id/run-test</td>
+                <td>/api/qa-items/:id/run-test</td>
                 <td>Run the linked Playwright test</td>
               </tr>
             </tbody>
@@ -902,10 +917,10 @@ npx qa-center --data-dir ./qa-data      # store data outside Vite watch scope</c
           </table>
         </div>
 
-        <h3 style="margin-top: 28px">POST /api/qa-issues — body</h3>
+        <h3 style="margin-top: 28px">POST /api/qa-items — body</h3>
         <pre><code>{
   "title": "Bug title",          // required
-  "origin": "manual",            // manual | feature | note | imported_markdown
+  "origin": "issue",             // issue | feature | note | imported_markdown
   "status": "open",              // open | in_progress | ready_for_qa | verified | closed
   "severity": "high",            // critical | high | medium | low | info
   "area": "Auth",
@@ -916,11 +931,74 @@ npx qa-center --data-dir ./qa-data      # store data outside Vite watch scope</c
   "notes": "Additional notes"
 }</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
 
-        <h3 style="margin-top: 20px">PATCH /api/qa-issues/:id — body</h3>
+        <h3 style="margin-top: 20px">PATCH /api/qa-items/:id — body</h3>
         <pre><code>{
   "status": "in_progress",
   "notes": "Updated notes"
 }</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
+      </section>
+
+      <!-- DDT -->
+      <section id="ddt">
+        <div class="section-label">Data-Driven Testing</div>
+        <h2>Linking DDT tests with <span style="color: var(--accent)">qaTest()</span></h2>
+        <p>
+          When using data-driven tests (DDT), test titles are dynamic — they contain variables like
+          <span class="inline-code">${feature.name}</span>. QA Center can't reliably link or run a
+          specific variant by title alone.
+        </p>
+        <p>
+          The solution is <span class="inline-code">qaTest(id, title)</span> — a utility exported
+          from the package that embeds a stable <span class="inline-code">[id:xxx]</span> tag into
+          the test title. QA Center greps by the ID, not the dynamic title.
+        </p>
+
+        <h3 style="margin-top: 24px">Install</h3>
+        <p>Already included — just import from the package.</p>
+        <pre><code>import { QACenter, qaTest } from "@purr/qa-center";</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
+
+        <h3 style="margin-top: 24px">Usage in a DDT loop</h3>
+        <pre><code>import { test } from "@playwright/test";
+import { qaTest } from "@purr/qa-center";
+
+const features = [
+  { id: "feat-001", name: "Dark mode toggle",  priority: "high"   },
+  { id: "feat-002", name: "Export to CSV",      priority: "medium" },
+  { id: "feat-003", name: "Nice to have tweak", priority: "info"   },
+];
+
+test.describe("Create Feature", () => {
+  for (const feature of features) {
+    test(qaTest(feature.id, `Can Add Feature — ${feature.name}`), async ({ page }) => {
+      // test body
+    });
+  }
+});</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
+
+        <p>
+          This produces titles like:
+          <span class="inline-code">[id:feat-001] Can Add Feature — Dark mode toggle</span>
+        </p>
+        <p>
+          In the QA Center UI, link the issue to the test with ID
+          <span class="inline-code">feat-001</span>. When you click Run Test, it greps by
+          <span class="inline-code">[id:feat-001]</span> — the dynamic part is ignored entirely.
+        </p>
+
+        <h3 style="margin-top: 24px">Without DDT — static tests</h3>
+        <p>
+          For regular static tests, <span class="inline-code">qaTest()</span> is optional. Just link
+          the test by title as usual — it works out of the box.
+        </p>
+        <pre><code>// No qaTest() needed for static titles
+test("Can Add Issue", async ({ page }) => { ... });</code><button class="copy-btn" onclick="copy(this)">copy</button></pre>
+
+        <div class="callout">
+          &#x1F4A1; ID format is up to you — use anything stable like
+          <span class="inline-code">feat-001</span>, <span class="inline-code">smoke-login</span>,
+          or <span class="inline-code">checkout-happy-path</span>. Just keep them unique per test
+          variant.
+        </div>
       </section>
     </div>
 

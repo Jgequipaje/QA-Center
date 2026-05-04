@@ -62,6 +62,35 @@ statusRouter.get("/", async (req, res) => {
     /* not built */
   }
 
+  // --- neko sprite ---
+  // The gif lives on the Vite dev server (port 5173) or the consumer's app,
+  // not on this API server. We check common local origins.
+  const nekoStatus = { accessible: false, url: null, checkedUrls: [] };
+  const candidateOrigins = [
+    "http://localhost:5173",
+    "http://localhost:4173",
+    "http://localhost:3000",
+  ];
+  for (const origin of candidateOrigins) {
+    const url = `${origin}/oneko.gif`;
+    nekoStatus.checkedUrls.push(url);
+    try {
+      // eslint-disable-next-line no-undef
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 1500);
+      // eslint-disable-next-line no-undef
+      const r = await fetch(url, { method: "HEAD", signal: controller.signal });
+      clearTimeout(timeout);
+      if (r.ok) {
+        nekoStatus.accessible = true;
+        nekoStatus.url = url;
+        break;
+      }
+    } catch {
+      /* unreachable or timed out — try next */
+    }
+  }
+
   // --- issue summary ---
   const byStatus = {};
   for (const issue of issues) {
@@ -76,6 +105,14 @@ statusRouter.get("/", async (req, res) => {
       nodeVersion: process.version,
       cwd,
       distBuilt,
+    },
+    neko: {
+      accessible: nekoStatus.accessible,
+      url: nekoStatus.url,
+      note: nekoStatus.accessible
+        ? "oneko.gif is reachable — neko will render correctly."
+        : "oneko.gif not found on any known local origin. Make sure your UI dev server is running.",
+      checkedUrls: nekoStatus.checkedUrls,
     },
     issues: {
       file: issuesFile,

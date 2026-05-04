@@ -4,11 +4,12 @@ import { QADrawerPage } from "./QADrawerPage";
 import NewFormPage from "./NewFormPage";
 
 export default class POManager {
-  page: Page;
-  request?: APIRequestContext;
-  qaFloatingButtonPage: QAFloatingButtonPage;
-  qaDrawerPage: QADrawerPage;
-  newFormPage: NewFormPage;
+  private readonly page: Page;
+  private readonly request?: APIRequestContext;
+  private readonly qaFloatingButtonPage: QAFloatingButtonPage;
+  private readonly qaDrawerPage: QADrawerPage;
+  private readonly newFormPage: NewFormPage;
+
   constructor(page: Page, request?: APIRequestContext) {
     this.page = page;
     this.request = request;
@@ -17,15 +18,15 @@ export default class POManager {
     this.newFormPage = new NewFormPage(this.page);
   }
 
-  getQAFloatingButtonPage() {
+  public getQAFloatingButtonPage(): QAFloatingButtonPage {
     return this.qaFloatingButtonPage;
   }
 
-  getQADrawerPage() {
+  public getQADrawerPage(): QADrawerPage {
     return this.qaDrawerPage;
   }
 
-  getNewFormPage() {
+  public getNewFormPage(): NewFormPage {
     return this.newFormPage;
   }
 }

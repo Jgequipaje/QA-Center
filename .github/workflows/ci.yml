@@ -1,23 +1,49 @@
 name: CI Pipeline
 
+# This workflow runs on every push and pull request to main/development branches.
+# It performs code quality checks, security audits, builds, and runs E2E tests.
+#
+# Jobs:
+# 1. format - Checks code formatting with Prettier
+# 2. lint - Runs ESLint on src, server, and tests
+# 3. typecheck - Validates TypeScript types
+# 4. audit - Checks for security vulnerabilities
+# 5. build - Builds the application
+# 6. playwright - Runs E2E tests with Playwright
+#
+# Required secrets: None
+# Required variables: None
+
 on:
   pull_request:
     branches: [main, development]
   push:
     branches: [main, development]
 
+# Cancel in-progress runs when a new run is triggered
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Minimal permissions by default
+permissions:
+  contents: read
+
 jobs:
   format:
     name: Prettier Check
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           ref: ${{ github.head_ref || github.ref_name }}
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
           node-version: lts/*
           cache: npm
@@ -31,14 +57,17 @@ jobs:
   lint:
     name: ESLint
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           ref: ${{ github.head_ref || github.ref_name }}
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
           node-version: lts/*
           cache: npm
@@ -46,20 +75,23 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Run lint
+      - name: Run ESLint
         run: npm run lint
 
   typecheck:
     name: Type Check
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           ref: ${{ github.head_ref || github.ref_name }}
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
           node-version: lts/*
           cache: npm
@@ -67,20 +99,23 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Run typecheck
+      - name: Run TypeScript type check
         run: npm run typecheck
 
   audit:
     name: Security Audit
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           ref: ${{ github.head_ref || github.ref_name }}
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
           node-version: lts/*
           cache: npm
@@ -88,21 +123,24 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Run audit
+      - name: Run npm audit
         run: npm audit --audit-level=moderate
 
   build:
-    name: Build
+    name: Build Application
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: [format, lint, typecheck, audit]
+    permissions:
+      contents: read
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           ref: ${{ github.head_ref || github.ref_name }}
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
           node-version: lts/*
           cache: npm
@@ -110,22 +148,32 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Build app
+      - name: Build application
         run: npm run build
 
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        with:
+          name: build-output
+          path: dist/
+          retention-days: 7
+          if-no-files-found: error
+
   playwright:
-    name: Playwright E2E
+    name: Playwright E2E Tests
     runs-on: ubuntu-latest
-    needs: build
     timeout-minutes: 60
+    needs: build
+    permissions:
+      contents: read
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           ref: ${{ github.head_ref || github.ref_name }}
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
           node-version: lts/*
           cache: npm
@@ -136,15 +184,15 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Start app server
+      - name: Start Vite dev server
         run: npm run dev &
         env:
           CI: true
 
-      - name: Wait for app server
+      - name: Wait for Vite dev server
         run: npx wait-on http://localhost:5173 --timeout 60000
 
-      - name: Start API server
+      - name: Start QA Center API server
         run: npm run server &
         env:
           CI: true
@@ -157,8 +205,18 @@ jobs:
 
       - name: Upload Playwright report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: playwright-report
           path: playwright-report/
-          retention-days: 30
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        with:
+          name: test-results
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore

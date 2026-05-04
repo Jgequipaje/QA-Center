@@ -172,18 +172,10 @@ type Props = {
   buttonSize: number;
   hasIssues: boolean;
   spriteUrl?: string;
-  baseUrl: string;
 };
 
-export default function NekoButton({
-  buttonX,
-  buttonY,
-  buttonSize,
-  hasIssues,
-  spriteUrl,
-  baseUrl,
-}: Props) {
-  const url = spriteUrl ?? `${baseUrl}/oneko.gif`;
+export default function NekoButton({ buttonX, buttonY, buttonSize, hasIssues, spriteUrl }: Props) {
+  const url = spriteUrl ?? `/oneko.gif`;
 
   const [bgPos, setBgPos] = useState(`${-3 * NEKO_SIZE}px ${-3 * NEKO_SIZE}px`);
   const seqIndexRef = useRef(0);
