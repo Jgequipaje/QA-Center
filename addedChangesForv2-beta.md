@@ -285,3 +285,15 @@
 
 - `package.json` — downgraded `@eslint/js` from ^10.0.1 to ^9.0.0 to match ESLint 9.39.4 and resolve peer dependency conflict
 - `package-lock.json` — updated PostCSS from <8.5.10 to >=8.5.10 to fix moderate severity XSS vulnerability (GHSA-qx2v-qp2m-jg93)
+
+## [May 4, 2026] - Improved CI workflow to follow GitHub Actions security standards
+
+- `.github/workflows/ci.yml` — added explicit minimal permissions (`contents: read`) to all jobs for security
+- `.github/workflows/ci.yml` — pinned all actions to full commit SHA instead of version tags to prevent supply chain attacks
+- `.github/workflows/ci.yml` — added concurrency control to cancel outdated workflow runs and save CI minutes
+- `.github/workflows/ci.yml` — added timeouts to all jobs (10min for checks, 15min for build, 60min for E2E tests)
+- `.github/workflows/ci.yml` — reduced artifact retention from 30 days to 7 days to reduce storage costs
+- `.github/workflows/ci.yml` — added workflow documentation explaining jobs, triggers, and requirements
+- `.github/workflows/ci.yml` — improved step names for better readability in logs
+- `.github/workflows/ci.yml` — added `if-no-files-found: error` to build artifacts to catch build failures early
+- `.github/CI-IMPROVEMENTS.md` — created documentation explaining all improvements and standards compliance
