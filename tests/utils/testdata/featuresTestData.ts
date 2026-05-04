@@ -83,5 +83,3 @@ export const featuresMissingTitle: FeatureTestData[] = [
     acceptanceCriteria: "- Given... When... Then...",
   },
 ];
-
-

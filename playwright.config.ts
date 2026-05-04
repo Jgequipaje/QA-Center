@@ -14,8 +14,8 @@ export default defineConfig({
   reporter: [["html", { open: "never" }], ["line"]],
 
   // Run UI tests serially to avoid race conditions with shared backend
-  fullyParallel: true,
-  workers: 4,
+  fullyParallel: false,
+  workers: 1,
 
   use: {
     baseURL: "http://localhost:5173",

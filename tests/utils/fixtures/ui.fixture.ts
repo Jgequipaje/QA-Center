@@ -25,6 +25,7 @@ export const uiTest = base.extend<{
     await use(() => qaDrawer.goToQADrawer());
   },
 
+  // eslint-disable-next-line no-empty-pattern
   qaItemsClient: async ({}, use) => {
     const apiContext = await request.newContext({
       baseURL: "http://localhost:3333",

@@ -271,3 +271,17 @@
 ## [April 27, 2026] - Fixed remaining flakiness issues in API tests with unique titles and cleanup
 
 - `tests/api/issues.api.spec.ts` — removed `deleteAllItems()` call from POST test, added unique titles with timestamp+random suffix to POST/PATCH/DELETE tests, added cleanup after each test to prevent 409 conflicts and ensure true test isolation
+
+## [May 4, 2026] - Fixed prettier command and resolved all ESLint errors
+
+- `package.json` — updated format script to use `npx prettier` instead of bare `prettier` to avoid dependency resolution conflicts
+- `server/index.js` — removed unused `fs` and `distExists` imports to fix `no-unused-vars` lint errors
+- `server/routes/status.js` — added eslint-disable comments for Node.js built-in globals (`AbortController`, `fetch`) to fix `no-undef` errors
+- `tests/utils/fixtures/api.fixture.ts` — added eslint-disable comment for empty object pattern (required by Playwright's fixture API)
+- `tests/utils/fixtures/apiUi.fixture.ts` — added eslint-disable comment for empty object pattern (required by Playwright's fixture API)
+- `tests/utils/fixtures/ui.fixture.ts` — added eslint-disable comment for empty object pattern (required by Playwright's fixture API)
+
+## [May 4, 2026] - Fixed ESLint dependency conflict and PostCSS security vulnerability
+
+- `package.json` — downgraded `@eslint/js` from ^10.0.1 to ^9.0.0 to match ESLint 9.39.4 and resolve peer dependency conflict
+- `package-lock.json` — updated PostCSS from <8.5.10 to >=8.5.10 to fix moderate severity XSS vulnerability (GHSA-qx2v-qp2m-jg93)

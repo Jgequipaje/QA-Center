@@ -8,6 +8,7 @@ export const apiUiTest = base.extend<{
   qaDrawer: ReturnType<POManager["getQADrawerPage"]>;
   newFormPage: ReturnType<POManager["getNewFormPage"]>;
 }>({
+  // eslint-disable-next-line no-empty-pattern
   qaItemsClient: async ({}, use) => {
     const apiContext = await playwrightRequest.newContext({
       baseURL: "http://localhost:3333",

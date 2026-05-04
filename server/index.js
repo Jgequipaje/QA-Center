@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import path from "path";
-import fs from "fs";
 import { fileURLToPath } from "url";
 import { issuesRouter } from "./routes/issues.js";
 import { testsRouter } from "./routes/tests.js";
@@ -10,7 +9,6 @@ import { statusRouter } from "./routes/status.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST = path.join(__dirname, "../dist");
-const distExists = fs.existsSync(path.join(DIST, "index.html"));
 
 /**
  * @param {{ cwd: string }} options

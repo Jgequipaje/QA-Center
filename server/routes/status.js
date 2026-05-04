@@ -75,8 +75,10 @@ statusRouter.get("/", async (req, res) => {
     const url = `${origin}/oneko.gif`;
     nekoStatus.checkedUrls.push(url);
     try {
+      // eslint-disable-next-line no-undef
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 1500);
+      // eslint-disable-next-line no-undef
       const r = await fetch(url, { method: "HEAD", signal: controller.signal });
       clearTimeout(timeout);
       if (r.ok) {
